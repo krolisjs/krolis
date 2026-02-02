@@ -13,11 +13,15 @@ export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
       return;
     }
     const root = node.root!;
-    let parent = node.parent!;
+    let parent = node.parent;
     while (parent && parent !== root) {
       if ([Position.ABSOLUTE, Position.RELATIVE].includes(parent._computedStyle.position)) {
         break;
       }
+      parent = parent.parent || parent.host?.parent;
+    }
+    if (!parent) {
+      return;
     }
     if (node.style.position.v === Position.ABSOLUTE) {
       node.layoutAbs(parent, parent.x, parent.y, parent.computedStyle.width, parent.computedStyle.height);
