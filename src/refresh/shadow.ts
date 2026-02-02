@@ -53,8 +53,8 @@ export function genShadow(
     t && drawDropShadow(gl, programs.dropShadow, t, color);
     // 最简单原地覆盖
     if (!x && !y && !blur) {
-      const cx = (bbox[2] - bbox[0]) * 0.5;
-      const cy = (bbox[3] - bbox[1]) * 0.5;
+      const cx = w * 0.5;
+      const cy = h * 0.5;
       CacheProgram.useProgram(gl, main);
       drawTextureCache(
         gl,
@@ -89,9 +89,9 @@ export function genShadow(
   if (b || x || y) {
     const bboxR2 = b ? b.bbox.slice(0) : bboxR.slice(0);
     bboxR2[0] = Math.min(bboxR2[0], bboxR2[0] + x);
-    bboxR2[1] = Math.min(bboxR2[1], bboxR2[0] + y);
-    bboxR2[2] = Math.max(bboxR2[2], bboxR2[0] + x);
-    bboxR2[3] = Math.max(bboxR2[3], bboxR2[0] + y);
+    bboxR2[1] = Math.min(bboxR2[1], bboxR2[1] + y);
+    bboxR2[2] = Math.max(bboxR2[2], bboxR2[2] + x);
+    bboxR2[3] = Math.max(bboxR2[3], bboxR2[3] + y);
     const res2 = TextureCache.getEmptyInstance(gl, bboxR2);
     res2.available = true;
     const list2 = res2.list;
@@ -146,10 +146,10 @@ export function genShadow(
                 main,
                 {
                   opacity: 1,
-                  bbox,
+                  bbox, // 和下面一样
                   t,
-                  dx: -x0 + bboxR[0] + x,
-                  dy: -y0 + bboxR[1] + y,
+                  dx: -x0 + x,
+                  dy: -y0 + y,
                 },
               );
             }
@@ -166,10 +166,10 @@ export function genShadow(
                 main,
                 {
                   opacity: 1,
-                  bbox,
+                  bbox, // 和下面一样
                   t,
-                  dx: -x0 + bboxR[0] + x,
-                  dy: -y0 + bboxR[0] + y,
+                  dx: -x0 + x,
+                  dy: -y0 + y,
                 },
               );
             }
@@ -185,10 +185,10 @@ export function genShadow(
               main,
               {
                 opacity: 1,
-                bbox,
+                bbox, // 这里应该用新的相对于此时原点的bbox，但为了节省，算到dx/dy上
                 t,
-                dx: -x0 + bboxS[0],
-                dy: -y0 + bboxS[1],
+                dx: -x0, // bbox[0] - x0 - bbox[0]
+                dy: -y0,
               },
             );
           }
