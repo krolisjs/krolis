@@ -15,6 +15,8 @@ export type Props = {
 }
 
 export type RootProps = Props & {
+  webgl2?: boolean;
+  webgpu?: boolean;
   contextAttributes?: any,
   style: Partial<JStyle> & {
     width: number;

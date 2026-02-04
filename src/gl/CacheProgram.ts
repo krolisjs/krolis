@@ -14,7 +14,7 @@ export class CacheProgram {
   attrib: Record<string, number>;
   uniformValue: Record<string, any>;
 
-  constructor(gl: WebGL2RenderingContext | WebGLRenderingContext, p: WebGLProgram, options?: {
+  constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, p: WebGLProgram, options?: {
     uniform?: string[],
     attrib?: string[],
   }) {
@@ -26,7 +26,7 @@ export class CacheProgram {
     this.initLocations(gl);
   }
 
-  initLocations(gl: WebGL2RenderingContext | WebGLRenderingContext) {
+  initLocations(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     if (this.options.uniform) {
       this.options.uniform.forEach(k => {
         this.uniform[k] = gl.getUniformLocation(this.program, k)!;
@@ -39,7 +39,7 @@ export class CacheProgram {
     }
   }
 
-  static useProgram(gl: WebGL2RenderingContext | WebGLRenderingContext, cp: CacheProgram) {
+  static useProgram(gl: WebGLRenderingContext | WebGL2RenderingContext, cp: CacheProgram) {
     if (last !== cp) {
       last = cp;
       gl.useProgram(cp.program);

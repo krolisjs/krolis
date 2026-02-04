@@ -3,7 +3,7 @@ import inject from '../util/inject';
 import CacheProgram from './CacheProgram';
 
 export function initShaders(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   vshader: string,
   fshader: string,
 ) {
@@ -19,7 +19,7 @@ export function initShaders(
 }
 
 function createProgram(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   vshader: string,
   fshader: string,
 ) {
@@ -60,7 +60,7 @@ function createProgram(
 }
 
 export function loadShader(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   type: number,
   source: string,
 ) {
@@ -88,7 +88,7 @@ export function loadShader(
 }
 
 export function createTexture(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   n?: number,
   tex?: TexImageSource,
   width?: number,
@@ -98,7 +98,7 @@ export function createTexture(
   if (n !== undefined) {
     bindTexture(gl, texture, n);
   }
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
   // 传入需要绑定的纹理
   if (tex) {
@@ -130,7 +130,7 @@ export function createTexture(
 }
 
 export function bindTexture(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   texture: WebGLTexture,
   n: number,
 ) {
@@ -154,7 +154,7 @@ let lastVtPoint: Float32Array;
 let lastVtTex: Float32Array;
 
 export function drawTextureCache(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cx: number,
   cy: number,
   cacheProgram: CacheProgram,
@@ -480,7 +480,7 @@ export function getSingleCoords() {
 }
 
 export function preSingle(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
 ) {
   const { vtPoint, vtTex } = getSingleCoords();
@@ -502,7 +502,7 @@ export function preSingle(
 }
 
 export function drawMask(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   mask: WebGLTexture,
   summary: WebGLTexture,
@@ -531,7 +531,7 @@ export function drawMask(
 }
 
 export function drawBox(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   width: number,
@@ -594,7 +594,7 @@ export function drawBox(
 }
 
 export function drawDual(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   width: number,
@@ -627,7 +627,7 @@ export function drawDual(
 }
 
 export function drawMotion(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   kernel: number, // 半径
@@ -685,7 +685,7 @@ export function drawMotion(
 }
 
 export function drawRadial(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   ratio: number,
@@ -736,7 +736,7 @@ export function drawRadial(
 }
 
 export function drawBloom(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture1: WebGLTexture,
   texture2: WebGLTexture,
@@ -755,7 +755,7 @@ export function drawBloom(
 }
 
 export function drawBloomBlur(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   threshold: number,
@@ -783,7 +783,7 @@ export function drawBloomBlur(
 }
 
 export function drawDualDown13(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   width: number,
@@ -804,7 +804,7 @@ export function drawDualDown13(
 }
 
 export function drawDualUp13(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture1: WebGLTexture,
   texture2: WebGLTexture,
@@ -830,7 +830,7 @@ export function drawDualUp13(
 export const drawMbm = drawMask;
 
 export function drawColorMatrix(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   m: number[],
@@ -852,7 +852,7 @@ export function drawColorMatrix(
 }
 
 export function drawLightDark(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   radius: number,
@@ -883,7 +883,7 @@ export function drawLightDark(
 }
 
 export function drawDropShadow(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   texture: WebGLTexture,
   color: number[],
@@ -976,7 +976,7 @@ function bbox2Coords(
 }
 
 // 从已绑定的framebuffer中获取当前图像数据debug
-export function texture2Blob (gl: WebGL2RenderingContext | WebGLRenderingContext, w: number, h: number, title?: string) {
+export function texture2Blob (gl: WebGLRenderingContext | WebGL2RenderingContext, w: number, h: number, title?: string) {
   const pixels = new Uint8Array(w * h * 4);
   gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
   const os = inject.getOffscreenCanvas(w, h);
