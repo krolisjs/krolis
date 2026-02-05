@@ -98,7 +98,7 @@ export function createTexture(
   if (n !== undefined) {
     bindTexture(gl, texture, n);
   }
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
   // 传入需要绑定的纹理
   if (tex) {
@@ -159,6 +159,7 @@ export function drawTextureCache(
   cy: number,
   cacheProgram: CacheProgram,
   drawData: DrawData,
+  flipY = false,
 ) {
   // 是否使用缓存TypeArray，避免垃圾回收
   let vtPoint: Float32Array, vtTex: Float32Array;
@@ -183,7 +184,7 @@ export function drawTextureCache(
     dy = 0,
   } = drawData;
   bindTexture(gl, t, 0);
-  const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix);
+  const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix, flipY);
   vtPoint[0] = t1.x;
   vtPoint[1] = t1.y;
   vtPoint[2] = t1.w || 1;
@@ -209,13 +210,13 @@ export function drawTextureCache(
   }
   else {
     vtTex[0] = 0;
-    vtTex[1] = 1;
+    vtTex[1] = 0;
     vtTex[2] = 0;
-    vtTex[3] = 0;
+    vtTex[3] = 1;
     vtTex[4] = 1;
-    vtTex[5] = 1;
+    vtTex[5] = 0;
     vtTex[6] = 1;
-    vtTex[7] = 0;
+    vtTex[7] = 1;
   }
   // 顶点buffer
   const pointBuffer = gl.createBuffer();
@@ -265,16 +266,16 @@ export function drawTextureCache(
 }
 
 const MAX_TEXTURE_IMAGE_UNITS = 16;
-const vtPoint = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 12);
-const vtTex = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 8);
-const vtOpacity = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 4);
-const vtTexIndex = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 4);
+const vtPoint = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 18);
+const vtTex = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 12);
+const vtOpacity = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 6);
+const vtTexIndex = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 6);
 // const vtClip = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 16);
 const uArray = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS);
 for (let i = 0; i < MAX_TEXTURE_IMAGE_UNITS; i++) {
   uArray[i] = i;
 }
-const indices = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 5 - 1);
+const indices = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 7 - 1);
 for (let i = 0; i < indices.length; i++) {
   const rem = (i + 1) % 5;
   if (rem) {
@@ -292,6 +293,7 @@ function drawPrItem(
   cy: number,
   cacheProgram: CacheProgram,
   list: DrawData[],
+  flipY = false,
 ) {
   const length = list.length;
   if (length > MAX_TEXTURE_IMAGE_UNITS) {
@@ -304,51 +306,69 @@ function drawPrItem(
       bbox,
       tc,
       t,
-      dx = 0,
-      dy = 0,
+      dx,
+      dy,
     } = list[i];
     bindTexture(gl, t, i);
-    const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix);
-    vtPoint[i * 12] = t1.x;
-    vtPoint[i * 12 + 1] = t1.y;
-    vtPoint[i * 12 + 2] = t1.w || 1;
-    vtPoint[i * 12 + 3] = t4.x;
-    vtPoint[i * 12 + 4] = t4.y;
-    vtPoint[i * 12 + 5] = t4.w || 1;
-    vtPoint[i * 12 + 6] = t2.x;
-    vtPoint[i * 12 + 7] = t2.y;
-    vtPoint[i * 12 + 8] = t2.w || 1;
-    vtPoint[i * 12 + 9] = t3.x;
-    vtPoint[i * 12 + 10] = t3.y;
-    vtPoint[i * 12 + 11] = t3.w || 1;
+    const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix, flipY);
+    vtPoint[i * 18] = t1.x;
+    vtPoint[i * 18 + 1] = t1.y;
+    vtPoint[i * 18 + 2] = t1.w || 1;
+    vtPoint[i * 18 + 3] = t4.x;
+    vtPoint[i * 18 + 4] = t4.y;
+    vtPoint[i * 18 + 5] = t4.w || 1;
+    vtPoint[i * 18 + 6] = t2.x;
+    vtPoint[i * 18 + 7] = t2.y;
+    vtPoint[i * 18 + 8] = t2.w || 1;
+    vtPoint[i * 18 + 9] = t4.x;
+    vtPoint[i * 18 + 10] = t4.y;
+    vtPoint[i * 18 + 11] = t4.w || 1;
+    vtPoint[i * 18 + 12] = t2.x;
+    vtPoint[i * 18 + 13] = t2.y;
+    vtPoint[i * 18 + 14] = t2.w || 1;
+    vtPoint[i * 18 + 15] = t3.x;
+    vtPoint[i * 18 + 16] = t3.y;
+    vtPoint[i * 18 + 17] = t3.w || 1;
     if (tc) { // 纹理坐标默认0,1，除非传入tc指定范围
-      vtTex[i * 8] = tc.x1;
-      vtTex[i * 8 + 1] = tc.y1;
-      vtTex[i * 8 + 2] = tc.x1;
-      vtTex[i * 8 + 3] = tc.y3;
-      vtTex[i * 8 + 4] = tc.x3;
-      vtTex[i * 8 + 5] = tc.y1;
-      vtTex[i * 8 + 6] = tc.x3;
-      vtTex[i * 8 + 7] = tc.y3;
+      vtTex[i * 12] = tc.x1;
+      vtTex[i * 12 + 1] = tc.y1;
+      vtTex[i * 12 + 2] = tc.x1;
+      vtTex[i * 12 + 3] = tc.y3;
+      vtTex[i * 12 + 4] = tc.x3;
+      vtTex[i * 12 + 5] = tc.y1;
+      vtTex[i * 12 + 6] = tc.x1;
+      vtTex[i * 12 + 7] = tc.y3;
+      vtTex[i * 12 + 8] = tc.x3;
+      vtTex[i * 12 + 9] = tc.y1;
+      vtTex[i * 12 + 10] = tc.x3;
+      vtTex[i * 12 + 11] = tc.y3;
     }
     else {
-      vtTex[i * 8] = 0;
-      vtTex[i * 8 + 1] = 1;
-      vtTex[i * 8 + 2] = 0;
-      vtTex[i * 8 + 3] = 0;
-      vtTex[i * 8 + 4] = 1;
-      vtTex[i * 8 + 5] = 1;
-      vtTex[i * 8 + 6] = 1;
-      vtTex[i * 8 + 7] = 0;
+      vtTex[i * 12] = 0;
+      vtTex[i * 12 + 1] = 0;
+      vtTex[i * 12 + 2] = 0;
+      vtTex[i * 12 + 3] = 1;
+      vtTex[i * 12 + 4] = 1;
+      vtTex[i * 12 + 5] = 0;
+      vtTex[i * 12 + 6] = 0;
+      vtTex[i * 12 + 7] = 1;
+      vtTex[i * 12 + 8] = 1;
+      vtTex[i * 12 + 9] = 0;
+      vtTex[i * 12 + 10] = 1;
+      vtTex[i * 12 + 11] = 1;
     }
-    vtOpacity[i * 4] = opacity;
-    vtOpacity[i * 4 + 1] = opacity;
-    vtOpacity[i * 4 + 2] = opacity;
-    vtOpacity[i * 4 + 3] = opacity;
-    vtTexIndex[i * 4] = i;
-    vtTexIndex[i * 4 + 1] = i;
-    vtTexIndex[i * 4 + 2] = i;
-    vtTexIndex[i * 4 + 3] = i;
+    vtOpacity[i * 6] = opacity;
+    vtOpacity[i * 6 + 1] = opacity;
+    vtOpacity[i * 6 + 2] = opacity;
+    vtOpacity[i * 6 + 3] = opacity;
+    vtOpacity[i * 6 + 4] = opacity;
+    vtOpacity[i * 6 + 5] = opacity;
+    vtTexIndex[i * 6] = i;
+    vtTexIndex[i * 6 + 1] = i;
+    vtTexIndex[i * 6 + 2] = i;
+    vtTexIndex[i * 6 + 3] = i;
+    vtTexIndex[i * 6 + 4] = i;
+    vtTexIndex[i * 6 + 5] = i;
     // vtClip[i * 16] = x1;
     // vtClip[i * 16 + 1] = y1;
     // vtClip[i * 16 + 2] = x2;
@@ -411,12 +431,8 @@ function drawPrItem(
       gl.uniform1i(u, item);
     }
   });
-  // 图元重启索引
-  const indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
   // 渲染
-  gl.drawElements(gl.TRIANGLE_STRIP, length * 5 - 1, gl.UNSIGNED_SHORT, 0);
+  gl.drawArrays(gl.TRIANGLES, 0, length * 6);
 }
 
 export function drawPr(
@@ -425,6 +441,7 @@ export function drawPr(
   cy: number,
   cacheProgram: CacheProgram,
   list: DrawData[],
+  flipY = false,
 ) {
   const length = list.length;
   if (!length) {
@@ -441,6 +458,7 @@ export function drawPr(
       cy,
       cacheProgram,
       list.slice(i * MAX_TEXTURE_IMAGE_UNITS, i * MAX_TEXTURE_IMAGE_UNITS + 16),
+      flipY,
     );
   }
   // 末尾零散的不够16个的
@@ -452,6 +470,7 @@ export function drawPr(
       cy,
       cacheProgram,
       list.slice(num * MAX_TEXTURE_IMAGE_UNITS),
+      flipY,
     );
   }
   gl.bindVertexArray(null);
@@ -956,8 +975,7 @@ export function bbox2Coords(
   dx = 0,
   dy = 0,
   matrix?: Float32Array,
-  offsetX = 0, // 应用matrix后的偏移，一般用不到
-  offsetY = 0,
+  flipY = false,
 ) {
   const t = calRectPoints(
     bbox[0] + dx,
@@ -968,10 +986,10 @@ export function bbox2Coords(
   );
   const { x1, y1, z1, w1, x2, y2, z2, w2, x3, y3, z3, w3, x4, y4, z4, w4 } = t;
   const cz = Math.max(z1 || 0, z2 || 0, z3 || 0, z4 || 0, Math.sqrt(cx * cx + cy * cy));
-  const t1 = pointNDC(x1 + offsetX, y1 + offsetY, z1 || 0, w1 || 1, cx, cy, cz);
-  const t2 = pointNDC(x2 + offsetX, y2 + offsetY, z2 || 0, w2 || 1, cx, cy, cz);
-  const t3 = pointNDC(x3 + offsetX, y3 + offsetY, z3 || 0, w3 || 1, cx, cy, cz);
-  const t4 = pointNDC(x4 + offsetX, y4 + offsetY, z4 || 0, w4 || 1,  cx, cy, cz);
+  const t1 = pointNDC(x1, y1, z1 || 0, w1 || 1, cx, cy, cz, flipY);
+  const t2 = pointNDC(x2, y2, z2 || 0, w2 || 1, cx, cy, cz, flipY);
+  const t3 = pointNDC(x3, y3, z3 || 0, w3 || 1, cx, cy, cz, flipY);
+  const t4 = pointNDC(x4, y4, z4 || 0, w4 || 1,  cx, cy, cz, flipY);
   return { t1, t2, t3, t4 };
 }
 

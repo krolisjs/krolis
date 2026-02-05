@@ -102,7 +102,7 @@ class Root extends Container {
 
   async appendTo(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    if ((config.webgpu || this.props.webgpu) && typeof navigator !== 'undefined' && navigator.gpu) {
+    if (config.webgpu && this.props.webgpu !== false && typeof navigator !== 'undefined' && navigator.gpu) {
       const adapter = await navigator.gpu?.requestAdapter();
       const device = await adapter?.requestDevice({
         requiredLimits: {
@@ -124,7 +124,7 @@ class Root extends Container {
     // gl的初始化和配置
     const attributes = Object.assign(ca, this.props.contextAttributes);
     let ctx: WebGLRenderingContext | WebGL2RenderingContext | undefined;
-    if (config.webgl2 || this.props.webgl2) {
+    if (config.webgl2 && this.props.webgl2 !== false) {
       ctx = canvas.getContext('webgl2', attributes) as WebGL2RenderingContext;
     }
     if (ctx) {

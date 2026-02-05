@@ -90,7 +90,7 @@ export function renderWebgl(
               bbox,
               t,
               tc,
-            });
+            }, true);
           }
         }
       }
@@ -103,7 +103,7 @@ export function renderWebgl(
   // 减少drawCall
   if (isWebgl2) {
     CacheProgram.useProgram(gl, pr);
-    drawPr(gl as WebGL2RenderingContext, cx, cy, pr, drawCallList);
+    drawPr(gl as WebGL2RenderingContext, cx, cy, pr, drawCallList, true);
     CacheProgram.useProgram(gl, main);
   }
 }

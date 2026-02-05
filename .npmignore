@@ -24,3 +24,4 @@ src/
 tsconfig.json
 types/
 .mocharc.json
+.krolis.svg

@@ -76,8 +76,8 @@ class Container extends Node {
 
   override layoutFlow(parent: Container, x: number, y: number, w: number, h: number, isMeasure = false) {
     super.layoutFlow(parent, x, y, w, h, isMeasure);
-    const { children } = this;
-    const hasAbsChild = this.layoutFA(parent, x, y, w, h, isMeasure);
+    const { children, computedStyle } = this;
+    const hasAbsChild = this.layoutFA(parent, x, y, computedStyle.width, computedStyle.height, isMeasure);
     // 自己是新的abs容器上下文才执行
     if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {

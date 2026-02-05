@@ -120,7 +120,7 @@ export async function loadImg(url: string, options?: RequestInit) {
   cache.state = State.LOADED;
   try {
     const img = await createImageBitmap(blob, {
-      imageOrientation: 'flipY',
+      // imageOrientation: 'flipY',
       premultiplyAlpha: 'none',
       colorSpaceConversion: 'none',
     });

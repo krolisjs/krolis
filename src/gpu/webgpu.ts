@@ -29,7 +29,7 @@ export function drawGpuTextureCache(
       dx = 0,
       dy = 0,
     } = list[i];
-    const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix);
+    const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix, true);
     const data = new Float32Array([
       t1.x, t1.y, t1.w || 1, 0, 0, opacity,
       t4.x, t4.y, t4.w || 1, 0, 1, opacity,
