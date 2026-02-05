@@ -73,5 +73,5 @@ export type ItemRoot = {
 export type ParserOptions = {
   dom?: HTMLElement;
   gl?: WebGLRenderingContext | WebGL2RenderingContext;
-  headless?: boolean;
+  void?: boolean;
 };

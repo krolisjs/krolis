@@ -1,14 +1,22 @@
 import AbstractNode, { NodeType } from './AbstractNode';
 import Container from './Container';
 import { RootProps } from '../format';
-import ca from '../gl/ca';
 import inject from '../util/inject';
-import { calWorldMatrixAndOpacity, renderWebgl, Struct } from '../refresh/struct';
-import frame from '../animation/frame';
+import { calWorldMatrixAndOpacity, renderWebgl, renderWebgpu, Struct } from '../refresh/struct';
 import { StyleUnit, Visibility } from '../style/define';
 import { getLevel, isReflow, RefreshLevel } from '../refresh/level';
 import { checkReflow } from '../refresh/reflow';
+import { CAN_PLAY, REFRESH, REFRESH_COMPLETE, WAITING } from '../refresh/refreshEvent';
+import AbstractAnimation from '../animation/AbstractAnimation';
+import AniController from '../animation/AniController';
+import frame from '../animation/frame';
+import { EncodeOptions } from '../codec/define';
+import codec from '../codec';
+import config from '../config';
+
 import { initShaders } from '../gl/webgl';
+import ca from '../gl/ca';
+import CacheProgram from '../gl/CacheProgram';
 import mainVert from '../gl/main.vert';
 import mainFrag from '../gl/main.frag';
 import prVert from '../gl/pr.vert';
@@ -28,30 +36,32 @@ import dualDown13Frag from '../gl/dualDown13.frag';
 import dualUp13Frag from '../gl/dualUp13.frag';
 import lightDarkFrag from '../gl/lightDark.frag';
 import dropShadowFrag from '../gl/dropShadow.frag';
-import AbstractAnimation from '../animation/AbstractAnimation';
-import AniController from '../animation/AniController';
-import { CAN_PLAY, REFRESH, REFRESH_COMPLETE, WAITING } from '../refresh/refreshEvent';
-import codec from '../codec';
-import { EncodeOptions } from '../codec/define';
-import CacheProgram from '../gl/CacheProgram';
-import config from '../config';
+
+import mainWgsl from '../gpu/main.wgsl';
 
 class Root extends Container {
   canvas?: HTMLCanvasElement;
-  ctx?: WebGLRenderingContext | WebGL2RenderingContext;
-  isWebgl2: boolean;
-  refs: Record<string, AbstractNode>;
-  structs: Struct[]; // 队列代替递归Tree的数据结构
-  task: Array<((sync: boolean) => void) | undefined>; // 异步绘制任务回调列表
-  aniTask: AbstractAnimation[]; // 动画任务，空占位
-  rl: RefreshLevel; // 一帧内画布最大刷新等级记录
-  programs: Record<string, CacheProgram>;
-  private readonly frameCb: (delta: number) => void; // 帧动画回调
+  ctx?: WebGLRenderingContext | WebGL2RenderingContext | GPUCanvasContext;
+  device?: GPUDevice;
+  isWebgl2 = false;
+  isWebgpu = false;
+  readonly refs: Record<string, AbstractNode> = {};
+  structs: Struct[] = []; // 队列代替递归Tree的数据结构
+  readonly task: Array<((sync: boolean) => void) | undefined> = []; // 异步绘制任务回调列表
+  readonly aniTask: AbstractAnimation[] = []; // 动画任务，空占位
+  rl = RefreshLevel.REFLOW; // 一帧内画布最大刷新等级记录
+  readonly programs: Record<string, CacheProgram> = {};
+  readonly shaderModules: Record<string, GPUShaderModule> = {};
+  readonly renderPipelines: Record<string, GPURenderPipeline> = {};
+  readonly samplers: Record<string, GPUSampler> = {};
+  readonly bindGroupsLayout: Record<string, GPUBindGroupLayout> = {};
+  readonly pipelineLayouts: Record<string, GPUPipelineLayout> = {};
+  readonly frameCb: (delta: number) => void; // 帧动画回调
   aniController: AniController;
   audioContext?: AudioContext;
-  contentLoadingCount: number; // 各子节点控制（如视频）加载中++，完成后--，为0时说明渲染完整
-  lastContentLoadingCount: number;
-  firstDraw: boolean;
+  contentLoadingCount = 0; // 各子节点控制（如视频）加载中++，完成后--，为0时说明渲染完整
+  lastContentLoadingCount = 0;
+  firstDraw = true;
 
   declare props: RootProps;
 
@@ -59,12 +69,6 @@ class Root extends Container {
     super(props, children);
     this.type = NodeType.ROOT;
     this.root = this;
-    this.refs = {};
-    this.structs = [];
-    this.task = [];
-    this.aniTask = [];
-    this.rl = RefreshLevel.REFLOW;
-    this.programs = {};
     this.frameCb = (delta: number) => {
       // 优先执行所有动画的差值更新计算，如有更新会调用addUpdate触发task添加，实现本帧绘制
       const aniTaskClone = this.aniTask.slice(0);
@@ -94,43 +98,82 @@ class Root extends Container {
       this.audioContext = new AudioContext();
     }
     this.aniController = new AniController(this.audioContext);
-    this.contentLoadingCount = 0;
-    this.lastContentLoadingCount = 0;
-    this.firstDraw = true;
-    this.isWebgl2 = false;
   }
 
-  appendTo(canvas: HTMLCanvasElement) {
+  async appendTo(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    const attributes = Object.assign(ca, this.props.contextAttributes);
+    if ((config.webgpu || this.props.webgpu) && typeof navigator !== 'undefined' && navigator.gpu) {
+      const adapter = await navigator.gpu?.requestAdapter();
+      const device = await adapter?.requestDevice({
+        requiredLimits: {
+          // 申请使用该硬件支持的最大值
+          maxTextureDimension2D: adapter.limits.maxTextureDimension2D,
+          maxTextureArrayLayers: adapter.limits.maxTextureArrayLayers,
+        },
+      });
+      if (device) {
+        this.device = device;
+        const format = navigator.gpu.getPreferredCanvasFormat();
+        const gpu = canvas.getContext('webgpu');
+        if (gpu) {
+          this.isWebgpu = true;
+          return this.appendToGpu(gpu, adapter!, device, format);
+        }
+      }
+    }
     // gl的初始化和配置
-    let gl: WebGL2RenderingContext | WebGLRenderingContext = canvas.getContext('webgl2', attributes) as WebGL2RenderingContext;
-    if (gl) {
+    const attributes = Object.assign(ca, this.props.contextAttributes);
+    let ctx: WebGLRenderingContext | WebGL2RenderingContext | undefined;
+    if (config.webgl2 || this.props.webgl2) {
+      ctx = canvas.getContext('webgl2', attributes) as WebGL2RenderingContext;
+    }
+    if (ctx) {
       this.isWebgl2 = true;
     }
     else {
-      gl = canvas.getContext('webgl', attributes) as WebGLRenderingContext;
+      ctx = canvas.getContext('webgl', attributes) as WebGLRenderingContext;
       this.isWebgl2 = false;
     }
-    if (!gl) {
+    if (!ctx) {
       throw new Error('Webgl unsupported!');
     }
-    this.appendToGl(gl);
+    return this.appendToGl(ctx);
   }
 
-  appendToGl(gl: WebGL2RenderingContext | WebGLRenderingContext) {
+  appendToGpu(gpu: GPUCanvasContext, adapter: GPUAdapter, device: GPUDevice, format: GPUTextureFormat) {
+    // 不能重复
+    if (this.ctx) {
+      inject.error('Duplicate appendToGpu');
+      return;
+    }
+    this.ctx = gpu;
+    gpu.configure({
+      device,
+      format,
+      alphaMode: 'premultiplied',
+    });
+    config.initGpu(adapter.limits.maxTextureDimension2D, adapter.limits.maxTextureArrayLayers);
+    this.initRenderPipeline(device, format);
+    this.afterAppend();
+  }
+
+  appendToGl(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     // 不能重复
     if (this.ctx) {
       inject.error('Duplicate appendToGl');
       return;
     }
     this.ctx = gl;
-    config.init(
+    config.initGl(
       gl.getParameter(gl.MAX_TEXTURE_SIZE),
       gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS),
       gl.getParameter(gl.MAX_VARYING_VECTORS),
     );
     this.initProgram(gl);
+    this.afterAppend();
+  }
+
+  private afterAppend() {
     // 渲染前布局和设置关系结构
     this.reLayout();
     this.didMount();
@@ -138,7 +181,7 @@ class Root extends Container {
     this.asyncDraw();
   }
 
-  appendToHeadless() {
+  appendToVoid() {
     this.reLayout();
     this.didMount();
     this.structs = this.structure(0);
@@ -152,19 +195,6 @@ class Root extends Container {
   reLayout() {
     this.checkRoot();
     this.layoutFlow(this, 0, 0, this._computedStyle.width, this._computedStyle.height, false);
-    // this.layoutAbs(this, 0, 0, this._computedStyle.width, this._computedStyle.height);
-    // this.layout({
-    //   x: 0,
-    //   y: 0,
-    //   w: this.computedStyle.width,
-    //   h: this.computedStyle.height,
-    // });
-    // this.layoutAbs(this, {
-    //   x: 0,
-    //   y: 0,
-    //   w: this.computedStyle.width,
-    //   h: this.computedStyle.height,
-    // });
   }
 
   private checkRoot() {
@@ -194,7 +224,10 @@ class Root extends Container {
     else {
       this._computedStyle.height = Math.max(1, this.style.height.v as number);
     }
-    this.ctx?.viewport(0, 0, this._computedStyle.width, this._computedStyle.height);
+    if (this.isWebgpu) {}
+    else {
+      (this.ctx as WebGLRenderingContext)?.viewport(0, 0, this._computedStyle.width, this._computedStyle.height);
+    }
   }
 
   /**
@@ -383,7 +416,12 @@ class Root extends Container {
       this.clear();
       this.rl = RefreshLevel.NONE;
       if (this.ctx) {
-        renderWebgl(this.ctx, this);
+        if (this.isWebgpu) {
+          renderWebgpu(this.ctx as GPUCanvasContext, this);
+        }
+        else {
+          renderWebgl(this.ctx as WebGLRenderingContext | WebGL2RenderingContext, this);
+        }
         this.emit(REFRESH);
         if (this.contentLoadingCount) {
           if (!this.lastContentLoadingCount) {
@@ -404,21 +442,25 @@ class Root extends Container {
   }
 
   clear() {
-    const gl = this.ctx;
-    if (gl) {
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
+    const ctx = this.ctx;
+    if (ctx) {
+      if (this.isWebgpu) {}
+      else {
+        (ctx as WebGLRenderingContext).clearColor(0, 0, 0, 0);
+        (ctx as WebGLRenderingContext).clear((ctx as WebGLRenderingContext).COLOR_BUFFER_BIT);
+      }
     }
   }
 
-  private initProgram(gl: WebGL2RenderingContext | WebGLRenderingContext) {
+  private initProgram(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     const isWebgl2 = this.isWebgl2;
-    this.programs.main = new CacheProgram(gl, initShaders(gl, mainVert, mainFrag), {
+    const programs = this.programs;
+    programs.main = new CacheProgram(gl, initShaders(gl, mainVert, mainFrag), {
       uniform: ['u_clip', 'u_texture', 'u_opacity'],
       attrib: ['a_position', 'a_texCoords'],
     });
     if (isWebgl2) {
-      this.programs.pr = new CacheProgram(gl, initShaders(gl, prVert, prFrag), {
+      programs.pr = new CacheProgram(gl, initShaders(gl, prVert, prFrag), {
         uniform: [
           'u_texture[0]',
           'u_texture[1]',
@@ -440,63 +482,121 @@ class Root extends Container {
         attrib: ['a_position', 'a_texCoords', 'a_opacity', 'a_clip', 'a_textureIndex'],
       });
     }
-    this.programs.box = new CacheProgram(gl, initShaders(gl, simpleVert, boxFrag), {
+    programs.box = new CacheProgram(gl, initShaders(gl, simpleVert, boxFrag), {
       uniform: ['u_texture', 'u_pw', 'u_ph', 'u_r', 'u_direction'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.dualDown = new CacheProgram(gl, initShaders(gl, simpleVert, dualDownFrag), {
+    programs.dualDown = new CacheProgram(gl, initShaders(gl, simpleVert, dualDownFrag), {
       uniform: ['u_xy', 'u_texture'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.dualUp = new CacheProgram(gl, initShaders(gl, simpleVert, dualUpFrag), {
+    programs.dualUp = new CacheProgram(gl, initShaders(gl, simpleVert, dualUpFrag), {
       uniform: ['u_x', 'u_y', 'u_texture'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.motion = new CacheProgram(gl, initShaders(gl, simpleVert, motionFrag), {
+    programs.motion = new CacheProgram(gl, initShaders(gl, simpleVert, motionFrag), {
       uniform: ['u_kernel', 'u_velocity', 'u_texture', 'u_limit'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.radial = new CacheProgram(gl, initShaders(gl, simpleVert, radialFrag), {
+    programs.radial = new CacheProgram(gl, initShaders(gl, simpleVert, radialFrag), {
       uniform: ['u_kernel', 'u_center', 'u_ratio', 'u_texture'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.cm = new CacheProgram(gl, initShaders(gl, simpleVert, cmFrag), {
+    programs.cm = new CacheProgram(gl, initShaders(gl, simpleVert, cmFrag), {
       uniform: ['u_m', 'u_m[0]', 'u_texture'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.mask = new CacheProgram(gl, initShaders(gl, simpleVert, maskFrag), {
+    programs.mask = new CacheProgram(gl, initShaders(gl, simpleVert, maskFrag), {
       uniform: ['u_texture1', 'u_texture2'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.maskGray = new CacheProgram(gl, initShaders(gl, simpleVert, maskGrayFrag), {
+    programs.maskGray = new CacheProgram(gl, initShaders(gl, simpleVert, maskGrayFrag), {
       uniform: ['u_texture1', 'u_texture2', 'u_d'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.bloom = new CacheProgram(gl, initShaders(gl, simpleVert, bloomFrag), {
+    programs.bloom = new CacheProgram(gl, initShaders(gl, simpleVert, bloomFrag), {
       uniform: ['u_texture1', 'u_texture2', 'u_threshold'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.bloomBlur = new CacheProgram(gl, initShaders(gl, simpleVert, bloomBlurFrag), {
+    programs.bloomBlur = new CacheProgram(gl, initShaders(gl, simpleVert, bloomBlurFrag), {
       uniform: ['u_texture', 'u_threshold'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.dualDown13 = new CacheProgram(gl, initShaders(gl, simpleVert, dualDown13Frag), {
+    programs.dualDown13 = new CacheProgram(gl, initShaders(gl, simpleVert, dualDown13Frag), {
       uniform: ['u_xy', 'u_texture'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.dualUp13 = new CacheProgram(gl, initShaders(gl, simpleVert, dualUp13Frag), {
+    programs.dualUp13 = new CacheProgram(gl, initShaders(gl, simpleVert, dualUp13Frag), {
       uniform: ['u_xy', 'u_texture1', 'u_texture2'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.lightDark = new CacheProgram(gl, initShaders(gl, simpleVert, lightDarkFrag), {
+    programs.lightDark = new CacheProgram(gl, initShaders(gl, simpleVert, lightDarkFrag), {
       uniform: ['u_texture', 'u_velocity', 'u_radius'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    this.programs.dropShadow = new CacheProgram(gl, initShaders(gl, simpleVert, dropShadowFrag), {
+    programs.dropShadow = new CacheProgram(gl, initShaders(gl, simpleVert, dropShadowFrag), {
       uniform: ['u_texture', 'u_color'],
       attrib: ['a_position', 'a_texCoords'],
     });
-    CacheProgram.useProgram(gl, this.programs.main);
+    CacheProgram.useProgram(gl, programs.main);
+  }
+
+  private initRenderPipeline(device: GPUDevice, format: GPUTextureFormat) {
+    const { bindGroupsLayout, pipelineLayouts, samplers, shaderModules, renderPipelines } = this;
+    bindGroupsLayout.main = device.createBindGroupLayout({
+      label: 'main',
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: 'float',
+            viewDimension: '2d',
+          },
+        },
+        {
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: {
+            type: 'filtering',
+          },
+        },
+      ],
+    });
+    pipelineLayouts.main = device.createPipelineLayout({
+      bindGroupLayouts: [
+        bindGroupsLayout.main,
+      ],
+    });
+    samplers.main = device.createSampler({
+      magFilter: 'linear',
+      minFilter: 'linear',
+    });
+    shaderModules.main = device.createShaderModule({
+      code: mainWgsl,
+    });
+    renderPipelines.main = device.createRenderPipeline({
+      label: 'main',
+      layout: pipelineLayouts.main,
+      vertex: {
+        module: shaderModules.main,
+        entryPoint: 'vs_main',
+        buffers: [{
+          arrayStride: 24,
+          attributes: [
+            { shaderLocation: 0, offset: 0, format: 'float32x3' },
+            { shaderLocation: 1, offset: 12, format: 'float32x2' },
+            { shaderLocation: 2, offset: 20, format: 'float32' },
+          ],
+        }],
+      },
+      fragment: {
+        module: shaderModules.main,
+        entryPoint: 'fs_main',
+        targets: [{ format }],
+      },
+      primitive: { topology: 'triangle-list' },
+    });
   }
 
   async encode(encodeOptions?: EncodeOptions) {

@@ -3,6 +3,9 @@ let manual = false;
 let MAX_TEXTURE_SIZE = max;
 let hasInit = false;
 
+let maxTextureDimension2D = 8192;
+let maxTextureArrayLayers = 256;
+
 export default {
   debug: false,
   offscreenCanvas: false,
@@ -24,7 +27,7 @@ export default {
   MAX_TEXTURE_IMAGE_UNITS: 8,
   MAX_VARYING_VECTORS: 15,
   // 初始化root的时候才会调用
-  init(maxSize: number, maxUnits: number, maxVectors: number) {
+  initGl(maxSize: number, maxUnits: number, maxVectors: number) {
     if (!manual) {
       max = Math.min(max, maxSize);
     }
@@ -36,6 +39,13 @@ export default {
     MAX_TEXTURE_SIZE = maxSize;
     this.MAX_TEXTURE_IMAGE_UNITS = maxUnits;
     this.MAX_VARYING_VECTORS = maxVectors;
+  },
+  get maxTextureDimension2D() {
+    return maxTextureDimension2D;
+  },
+  initGpu(mtd2d: number, mtal: number) {
+    maxTextureDimension2D = mtd2d;
+    maxTextureArrayLayers = mtal;
   },
   defaultFontFamily: 'Arial',
   defaultFontSize: 16,
@@ -51,4 +61,6 @@ export default {
   mute: false, // 全局静音，不解码合成音频部分
   indexedDB: false,
   encoderFrameQue: 0, // 渲染传给合成时帧队列缓存多少，0为一帧一帧渲染等待合成，负数为无穷大，建议4低内存高并发
+  webgl2: true, // 是否尝试使用webgl2
+  webgpu: false, // 是否尝试使用webgpu
 };

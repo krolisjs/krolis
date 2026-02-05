@@ -6,6 +6,7 @@ import { assignMatrix, multiply } from '../math/matrix';
 import Container from '../node/Container';
 import { DrawData, drawTextureCache, drawPr } from '../gl/webgl';
 import CacheProgram from '../gl/CacheProgram';
+import { drawGpuTextureCache, GpuDrawData } from '../gpu/webgpu';
 
 export type Struct = {
   node: Node;
@@ -16,7 +17,7 @@ export type Struct = {
 };
 
 export function renderWebgl(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
 ) {
   const { structs, width: W, height: H, isWebgl2 } = root;
@@ -28,6 +29,7 @@ export function renderWebgl(
   CacheProgram.useProgram(gl, main);
   gl.viewport(0, 0, W, H);
   const drawCallList: DrawData[] = [];
+  // 循环代替递归
   for (let i = 0, len = structs.length; i < len; i++) {
     const { node, total, next } = structs[i];
     // 不可见和透明的跳过
@@ -104,6 +106,81 @@ export function renderWebgl(
     drawPr(gl as WebGL2RenderingContext, cx, cy, pr, drawCallList);
     CacheProgram.useProgram(gl, main);
   }
+}
+
+export function renderWebgpu(ctx: GPUCanvasContext, root: Root) {
+  const { structs, width: W, height: H, device, bindGroupsLayout, renderPipelines, samplers } = root;
+  const commandEncoder = device!.createCommandEncoder();
+  const textureView = ctx.getCurrentTexture().createView();
+  const passEncoder = commandEncoder.beginRenderPass({
+    colorAttachments: [{
+      view: textureView,
+      clearValue: { r: 0, g: 0, b: 0, a: 0 },
+      loadOp: 'clear',
+      storeOp: 'store'
+    }]
+  });
+  passEncoder.setPipeline(renderPipelines.main);
+  genMerge(ctx, root, 0, 0, W, H);
+  const cx = W * 0.5;
+  const cy = H * 0.5;
+  const drawCallList: GpuDrawData[] = [];
+  // 循环代替递归
+  for (let i = 0, len = structs.length; i < len; i++) {
+    const { node, total, next } = structs[i];
+    // 不可见和透明的跳过
+    const computedStyle = node.computedStyle;
+    if (shouldIgnore(computedStyle)) {
+      for (let j = i + 1; j < i + total; j++) {
+        const node = structs[j].node;
+        calWorldMatrixAndOpacity(node, j, node.parent || node.host?.parent);
+      }
+      i += total + next;
+      continue;
+    }
+    calWorldMatrixAndOpacity(node, i, node.parent || node.host?.parent);
+    // 计算后的世界坐标结果
+    const opacity = node._opacity;
+    const matrix = node._matrixWorld;
+    let target = node.gpuTextureTarget;
+    let isInScreen = false;
+    // 有merge的直接判断是否在可视范围内，合成结果在merge中做了，可能超出范围不合成
+    if (node.hasContent) {
+      if (target?.available) {
+        isInScreen = checkInScreen(target.bbox, matrix, W, H);
+      }
+      // 无merge的是单个节点，判断是否有内容以及是否在可视范围内，首次渲染或更新后会无target
+      else {
+        isInScreen = checkInScreen(
+          node._filterBbox, // 检测用原始的渲染用取整的
+          matrix,
+          W,
+          H,
+        );
+        if (isInScreen && node.hasContent) {
+          node.genGpuTexture(ctx, device!, bindGroupsLayout.main, samplers.main);
+          target = node.gpuTextureTarget!;
+        }
+      }
+    }
+    // 屏幕内有内容渲染
+    if (isInScreen && target!.available) {
+      const list = target!.list;
+      for (let i = 0, len = list.length; i < len; i++) {
+        const { bbox, t, bindGroup, tc } = list[i];
+        drawCallList.push({
+          opacity,
+          matrix,
+          bbox,
+          t,
+          bindGroup,
+        });
+      }
+    }
+  }
+  drawGpuTextureCache(passEncoder, device!, cx, cy, drawCallList);
+  passEncoder.end();
+  device!.queue.submit([commandEncoder.finish()]);
 }
 
 export function calWorldMatrixAndOpacity(node: Node, i: number, parent?: Container) {

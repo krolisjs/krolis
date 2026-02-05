@@ -35,6 +35,7 @@ import { calMatrixByOrigin, calPerspectiveMatrix, calTransform, } from '../style
 import { d2r, H } from '../math/geom';
 import CanvasCache from '../refresh/CanvasCache';
 import TextureCache from '../refresh/TextureCache';
+import GpuTextureCache from '../refresh/GpuTextureCache';
 import AbstractAnimation, { Options } from '../animation/AbstractAnimation';
 import CssAnimation, { JKeyFrame } from '../animation/CssAnimation';
 import { calComputedFill, calComputedFilter, calComputedStroke } from '../style/compute';
@@ -48,40 +49,40 @@ import { JCssAnimations, JRichAnimations, JTimeAnimations } from '../parser/defi
 import { gaussSize, motionSize, radialSize } from '../math/blur';
 
 class Node extends AbstractNode {
-  _x: number;
-  _y: number;
+  _x = 0;
+  _y = 0;
   _style: Style;
   _computedStyle: ComputedStyle;
   _struct: Struct;
-  _opacity: number; // 世界透明度
-  _transform: Float32Array; // 不包含transformOrigin
-  _matrix: Float32Array; // 包含transformOrigin
-  _matrixWorld: Float32Array; // 世界transform
-  _perspectiveMatrix: Float32Array; // 透视矩阵作用于所有孩子
-  _perspectiveMatrixSelf: Float32Array;
-  canvasCache: CanvasCache | null; // 先渲染到2d上作为缓存
-  textureCache: TextureCache | null; // 从canvasCache生成的纹理缓存
-  textureTotal: TextureCache | null; // 局部子树缓存
-  textureFilter: TextureCache | null; // 有filter时的缓存
-  textureMask: TextureCache | null;
-  textureTarget: TextureCache | null; // 指向自身所有缓存中最优先的那个
-  tempOpacity: number; // 局部根节点merge汇总临时用到的2个
-  tempMatrix: Float32Array;
-  tempBbox: Float32Array | null; // 这个比较特殊，在可视范围外的merge没有变化会一直保存，防止重复计算
-  _rect: Float32Array; // 真实内容组成的内容框，group/geom特殊计算
-  _bbox: Float32Array; // 以rect为基础，包含边框包围盒
-  _filterBbox: Float32Array; // 包含filter/阴影内内容外的包围盒
-  _animationList: AbstractAnimation[]; // 节点上所有的动画列表
+  _opacity = 0; // 世界透明度
+  _transform = identity(); // 不包含transformOrigin
+  _matrix = identity(); // 包含transformOrigin
+  _matrixWorld = identity(); // 世界transform
+  _perspectiveMatrix = EMPTY_MATRIX; // 透视矩阵作用于所有孩子
+  _perspectiveMatrixSelf = EMPTY_MATRIX;
+  canvasCache: CanvasCache | null = null; // 先渲染到2d上作为缓存
+  textureCache: TextureCache | null = null; // 从canvasCache生成的纹理缓存
+  textureTotal: TextureCache | null = null; // 局部子树缓存
+  textureFilter: TextureCache | null = null; // 有filter时的缓存
+  textureMask: TextureCache | null = null;
+  textureTarget: TextureCache | null = null; // 指向自身所有缓存中最优先的那个
+  gpuTextureCache: GpuTextureCache | null = null;
+  gpuTextureTarget: GpuTextureCache | null = null;
+  tempOpacity = 0; // 局部根节点merge汇总临时用到的2个
+  tempMatrix = identity();
+  tempBbox: Float32Array | null = null; // 这个比较特殊，在可视范围外的merge没有变化会一直保存，防止重复计算
+  _rect = new Float32Array([0, 0, 0, 0]); // 真实内容组成的内容框，group/geom特殊计算
+  _bbox = new Float32Array([0, 0, 0, 0]); // 以rect为基础，包含边框包围盒
+  _filterBbox = new Float32Array([0, 0, 0, 0]); // 包含filter/阴影内内容外的包围盒
+  _animationList: AbstractAnimation[] = []; // 节点上所有的动画列表
   animationRecords?: (JCssAnimations | JTimeAnimations | JRichAnimations)[];
 
-  protected contentLoadingNum: number; // 标识当前一共有多少显示资源在加载中
+  protected contentLoadingNum = 0; // 标识当前一共有多少显示资源在加载中
 
   constructor(props: Props) {
     super(props);
     this.type = NodeType.NODE;
     this.isNode = true;
-    this._x = 0;
-    this._y = 0;
     this._style = normalize(getDefaultJStyle(props.style));
     this._computedStyle = getDefaultComputedStyle();
     this._struct = {
@@ -91,28 +92,6 @@ class Node extends AbstractNode {
       lv: 0,
       next: 0,
     };
-    this._opacity = 0;
-    this._transform = identity();
-    this._matrix = identity();
-    this._matrixWorld = identity();
-    this._perspectiveMatrix = EMPTY_MATRIX;
-    this._perspectiveMatrixSelf = EMPTY_MATRIX;
-    this.hasContent = false;
-    this._animationList = [];
-    this.contentLoadingNum = 0;
-    this.canvasCache = null;
-    this.textureCache = null;
-    this.textureTotal = null;
-    this.textureFilter = null;
-    this.textureMask = null;
-    this.textureTarget = null;
-    // merge过程中相对于merge顶点作为局部根节点时暂存的数据
-    this.tempOpacity = 1;
-    this.tempMatrix = identity();
-    this._rect = new Float32Array([0, 0, 0, 0]);
-    this._bbox = new Float32Array([0, 0, 0, 0]);
-    this._filterBbox = new Float32Array([0, 0, 0, 0]);
-    this.tempBbox = null;
   }
 
   override didMount() {
@@ -620,7 +599,7 @@ class Node extends AbstractNode {
     computedStyle.perspectiveOrigin = pfo as [number, number];
     computedStyle.perspective = calSize(style.perspective, this.computedStyle.width);
     if (computedStyle.perspective >= 1) {
-      this._perspectiveMatrix = calPerspectiveMatrix(computedStyle.perspective, pfo[0], pfo[1]);
+      this._perspectiveMatrix = calPerspectiveMatrix(computedStyle.perspective, pfo[0], pfo[1]) as Float32Array<ArrayBuffer>;
     }
     else {
       this._perspectiveMatrix = EMPTY_MATRIX;
@@ -636,7 +615,7 @@ class Node extends AbstractNode {
     computedStyle.perspectiveSelf = calSize(style.perspectiveSelf, this.computedStyle.width);
     if (computedStyle.perspectiveSelf >= 1) {
       const tfo = computedStyle.transformOrigin;
-      this._perspectiveMatrixSelf = calPerspectiveMatrix(computedStyle.perspectiveSelf, tfo[0] + transform[12], tfo[1] + transform[13]);
+      this._perspectiveMatrixSelf = calPerspectiveMatrix(computedStyle.perspectiveSelf, tfo[0] + transform[12], tfo[1] + transform[13]) as Float32Array<ArrayBuffer>;
     }
     else {
       this._perspectiveMatrixSelf = EMPTY_MATRIX;
@@ -999,7 +978,7 @@ class Node extends AbstractNode {
     }
   }
 
-  genTexture(gl: WebGL2RenderingContext | WebGLRenderingContext) {
+  genTexture(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     this.renderCanvas();
     this.textureCache?.release();
     const canvasCache = this.canvasCache;
@@ -1009,6 +988,19 @@ class Node extends AbstractNode {
     }
     else {
       this.textureTarget = this.textureCache = null;
+    }
+  }
+
+  genGpuTexture(ctx: GPUCanvasContext, device: GPUDevice, layout: GPUBindGroupLayout, sampler: GPUSampler) {
+    this.renderCanvas();
+    this.textureCache?.release();
+    const canvasCache = this.canvasCache;
+    if (canvasCache?.available) {
+      this.gpuTextureTarget = this.gpuTextureCache = new GpuTextureCache(ctx, device, layout, sampler, ceilBbox(this.bbox.slice(0)), canvasCache);
+      canvasCache.release();
+    }
+    else {
+      this.gpuTextureTarget = this.gpuTextureCache = null;
     }
   }
 

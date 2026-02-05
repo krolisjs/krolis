@@ -39,10 +39,10 @@ export enum NodeType {
 let id = 0;
 
 abstract class AbstractNode extends Event {
-  id: number;
-  type: NodeType;
-  isNode: boolean;
-  isComponent: boolean;
+  id = id++;
+  type = NodeType.ABSTRACT;
+  isNode = false;
+  isComponent = false;
   props: Props;
   uuid: string;
   name?: string;
@@ -53,37 +53,23 @@ abstract class AbstractNode extends Event {
   next?: AbstractNode;
   mask?: AbstractNode;
   host?: Component;
-  isMounted: boolean; // 是否在dom上
-  isDestroyed: boolean; // 是否永久被销毁，手动调用
-  refreshLevel: RefreshLevel;
-  hasCacheOp: boolean; // 是否计算过世界opacity
-  localOpId: number; // 同下面的matrix
-  parentOpId: number;
-  hasCacheMw: boolean; // 是否计算过世界matrix
-  localMwId: number; // 当前计算后的世界matrix的id，每次改变自增
-  parentMwId: number; // 父级的id副本，用以对比确认父级是否变动过
-  hasContent: boolean; // 是否有内容需要渲染
+  isMounted = false; // 是否在dom上
+  isDestroyed = false; // 是否永久被销毁，手动调用
+  refreshLevel = RefreshLevel.REFLOW;
+  hasCacheOp = false; // 是否计算过世界opacity
+  localOpId = 0; // 同下面的matrix
+  parentOpId = 0;
+  hasCacheMw = false; // 是否计算过世界matrix
+  localMwId = 0; // 当前计算后的世界matrix的id，每次改变自增
+  parentMwId = 0; // 父级的id副本，用以对比确认父级是否变动过
+  hasContent = false; // 是否有内容需要渲染
 
   constructor(props: Props) {
     super();
-    this.id = id++;
-    this.type = NodeType.ABSTRACT;
-    this.isNode = false;
-    this.isComponent = false;
     this.props = props;
     this.uuid = props.uuid || uuid.v4();
     this.name = props.name;
     this.isLocked = !!props.isLocked;
-    this.isMounted = false;
-    this.isDestroyed = false;
-    this.refreshLevel = RefreshLevel.REFLOW;
-    this.hasCacheOp = false;
-    this.localOpId = 0;
-    this.parentOpId = 0;
-    this.hasCacheMw = false;
-    this.localMwId = 0;
-    this.parentMwId = 0;
-    this.hasContent = false;
   }
 
   didMount() {

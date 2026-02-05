@@ -78,8 +78,8 @@ export function parseRoot(json: ItemRoot, options?: ParserOptions) {
   const root = new Root(json.props, (json.children || []).map(item => {
     return parseJSON(item);
   }));
-  if (options?.headless) {
-    root.appendToHeadless();
+  if (options?.void) {
+    root.appendToVoid();
   }
   else if (options?.gl) {
     root.appendToGl(options.gl);

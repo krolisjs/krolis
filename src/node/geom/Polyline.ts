@@ -34,7 +34,7 @@ class Polyline extends Node {
     super.calRepaintStyle(lv);
     this.coords = undefined;
     // bbox等父类设置了，矢量的变化会影响_rect
-    this._rect = resetBbox(this._rect);
+    this._rect = resetBbox(this._rect) as Float32Array<ArrayBuffer>;
   }
 
   buildPoints() {

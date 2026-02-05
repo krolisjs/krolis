@@ -949,7 +949,7 @@ function pointNDC(
  * matrix是最终世界matrix，包含了画布缩放的scale（PageContainer上），因此坐标是bbox乘matrix，
  * dx/dy不参与matrix计算
  */
-function bbox2Coords(
+export function bbox2Coords(
   bbox: Float32Array,
   cx: number,
   cy: number,

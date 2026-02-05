@@ -561,7 +561,7 @@ export function calRectPoints(
   ya: number,
   xb: number,
   yb: number,
-  matrix?: Float32Array<ArrayBuffer>,
+  matrix?: Float32Array,
 ) {
   let { x: x1, y: y1, z: z1, w: w1 } = calPoint({ x: xa, y: ya }, matrix);
   let { x: x3, y: y3, z: z3, w: w3 } = calPoint({ x: xb, y: yb }, matrix);

@@ -38,14 +38,14 @@ export type Merge = {
 }
 
 export function genMerge(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext | GPUCanvasContext,
   root: Root,
   x1: number,
   y1: number,
   x2: number,
   y2: number,
 ) {
-  const { structs, width: W, height: H } = root;
+  const { structs, width: W, height: H, isWebgpu } = root;
   root.contentLoadingCount = 0; // 归零重新计数
   const mergeList: Merge[] = [];
   const mergeHash: Merge[] = [];
@@ -182,7 +182,7 @@ export function genMerge(
     // 尝试生成此节点汇总纹理，无论是什么效果，都是对汇总后的起效，单个节点的绘制等于本身纹理缓存
     if (!node.textureTotal?.available) {
       const t = genTotal(
-        gl,
+        gl as WebGLRenderingContext,
         root,
         node,
         structs,
@@ -199,7 +199,7 @@ export function genMerge(
     }
     // 生成filter，这里直接进去，如果没有filter会返回空，group的tint也视作一种filter
     if (node.textureTarget && !node.textureFilter?.available) {
-      const t = genFilter(gl, root, node, W, H);
+      const t = genFilter(gl as WebGLRenderingContext, root, node, W, H);
       if (t) {
         node.textureFilter = node.textureTarget = t;
         res = t;
@@ -208,7 +208,7 @@ export function genMerge(
     // 生成mask，需要判断next否则无效，或者手动指定内容
     if (maskMode && node.textureTarget?.available && !node.textureMask?.available && node.next) {
       const t = genMask(
-        gl,
+        gl as WebGLRenderingContext,
         root,
         node,
         maskMode,
@@ -324,7 +324,7 @@ type ListRect = Omit<SubTexture, 't'> & {
 };
 
 function genTotal(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   structs: Struct[],
@@ -553,7 +553,7 @@ function genTotal(
 }
 
 function genFilter(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   W: number,
@@ -696,7 +696,7 @@ function genFilter(
 }
 
 export function genMask(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   maskMode: Mask,
@@ -1011,7 +1011,7 @@ export function genMask(
 
 // 创建一个和画布一样大的纹理，将画布和即将mbm混合的节点作为输入，结果重新赋值给画布
 function genMbm(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   tex1: WebGLTexture,
   tex2: WebGLTexture,
   mixBlendMode: MixBlendMode,
@@ -1106,7 +1106,7 @@ export default {
     const { root, computedStyle, struct } = node;
     if (root && struct) {
       genMask(
-        root.ctx as WebGL2RenderingContext | WebGLRenderingContext,
+        root.ctx as WebGLRenderingContext | WebGL2RenderingContext,
         root,
         node,
         computedStyle.maskMode,
