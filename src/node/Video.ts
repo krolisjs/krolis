@@ -356,7 +356,7 @@ class Video extends Node {
     }
   }
 
-  override genTexture(gl: WebGL2RenderingContext | WebGLRenderingContext) {
+  override genTexture(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     const { isPure, videoFrame, canvasCache } = this;
     if (isPure) {
       if (videoFrame) {

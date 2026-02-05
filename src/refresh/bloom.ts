@@ -7,7 +7,7 @@ import CacheProgram from '../gl/CacheProgram';
 import { createTexture, drawBloom, drawBloomBlur, drawDualDown13, drawDualUp13 } from '../gl/webgl';
 
 export function genBloom(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   textureTarget: TextureCache,

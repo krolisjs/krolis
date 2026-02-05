@@ -15,7 +15,7 @@ const CANVAS_CACHE_MAP = new WeakMap<CanvasCache, {
   count: number;
 }>();
 
-const IMG_MAP = new WeakMap<HTMLImageElement, {
+const IMG_MAP = new WeakMap<ImageBitmap, {
   t: WebGLTexture,
   count: number;
 }>();
@@ -42,17 +42,17 @@ let id = 0;
 
 class TextureCache {
   id: number;
-  gl: WebGL2RenderingContext | WebGLRenderingContext;
+  gl: WebGLRenderingContext | WebGL2RenderingContext;
   available: boolean;
   bbox: Float32Array;
   list: SubTexture[];
-  image?: HTMLImageElement;
+  image?: ImageBitmap;
   canvasCache?: CanvasCache;
   videoFrame?: VideoFrame;
   canvas?: HTMLCanvasElement;
 
-  constructor(gl: WebGL2RenderingContext | WebGLRenderingContext, bbox: Float32Array,
-              source?: CanvasCache | HTMLImageElement | VideoFrame | HTMLCanvasElement,
+  constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, bbox: Float32Array,
+              source?: CanvasCache | ImageBitmap | VideoFrame | HTMLCanvasElement,
               tc?: { x1: number, y1: number, x3: number, y3: number }) {
     this.id = id++;
     this.gl = gl;
@@ -90,7 +90,7 @@ class TextureCache {
       }
       else {
         const t = createTexture(gl, 0, source);
-        if (typeof HTMLImageElement !== 'undefined' && source instanceof HTMLImageElement) {
+        if (typeof ImageBitmap !== 'undefined' && source instanceof ImageBitmap) {
           this.image = source;
           this.list.push({
             bbox: new Float32Array(bbox),
@@ -161,7 +161,7 @@ class TextureCache {
     return true;
   }
 
-  releaseImg(image: HTMLImageElement) {
+  releaseImg(image: ImageBitmap) {
     if (!this.available) {
       return false;
     }
@@ -228,7 +228,7 @@ class TextureCache {
     return CANVAS_CACHE_MAP.has(canvasCache);
   }
 
-  static getCanvasCacheInstance(gl: WebGL2RenderingContext | WebGLRenderingContext, canvasCache: CanvasCache, bbox: Float32Array) {
+  static getCanvasCacheInstance(gl: WebGLRenderingContext | WebGL2RenderingContext, canvasCache: CanvasCache, bbox: Float32Array) {
     const cache = CANVAS_CACHE_MAP.get(canvasCache);
     if (cache) {
       cache.count++;
@@ -278,11 +278,11 @@ class TextureCache {
     return res;
   }
 
-  static hasImageCache(img: HTMLImageElement) {
+  static hasImageCache(img: ImageBitmap) {
     return IMG_MAP.has(img);
   }
 
-  static getImgInstance(gl: WebGL2RenderingContext | WebGLRenderingContext, image: HTMLImageElement, bbox: Float32Array,
+  static getImgInstance(gl: WebGLRenderingContext | WebGL2RenderingContext, image: ImageBitmap, bbox: Float32Array,
                         tc?: { x1: number, y1: number, x3: number, y3: number }) {
     const cache = IMG_MAP.get(image);
     if (cache) {
@@ -312,7 +312,7 @@ class TextureCache {
     return VIDEO_FRAME_MAP.has(videoFrame);
   }
 
-  static getVideoFrameInstance(gl: WebGL2RenderingContext | WebGLRenderingContext, videoFrame: VideoFrame, bbox: Float32Array,
+  static getVideoFrameInstance(gl: WebGLRenderingContext | WebGL2RenderingContext, videoFrame: VideoFrame, bbox: Float32Array,
                                tc?: { x1: number, y1: number, x3: number, y3: number }) {
     const cache = VIDEO_FRAME_MAP.get(videoFrame);
     if (cache) {
@@ -337,7 +337,7 @@ class TextureCache {
     return res;
   }
 
-  static getCanvasInstance(gl: WebGL2RenderingContext | WebGLRenderingContext, canvas: HTMLCanvasElement, bbox: Float32Array,
+  static getCanvasInstance(gl: WebGLRenderingContext | WebGL2RenderingContext, canvas: HTMLCanvasElement, bbox: Float32Array,
                            tc?: { x1: number, y1: number, x3: number, y3: number }) {
     const cache = CANVAS_MAP.get(canvas);
     if (cache) {
@@ -362,7 +362,7 @@ class TextureCache {
     return res;
   }
 
-  static getEmptyInstance(gl: WebGL2RenderingContext | WebGLRenderingContext, bbox: Float32Array) {
+  static getEmptyInstance(gl: WebGLRenderingContext | WebGL2RenderingContext, bbox: Float32Array) {
     return new TextureCache(gl, bbox);
   }
 }

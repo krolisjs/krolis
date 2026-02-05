@@ -349,7 +349,7 @@ class Bitmap extends Node {
     }
   }
 
-  override genTexture(gl: WebGL2RenderingContext | WebGLRenderingContext) {
+  override genTexture(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     const { isPure, loader, canvasCache } = this;
     if (isPure) {
       // 肯定有

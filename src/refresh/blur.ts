@@ -24,7 +24,7 @@ import { createInOverlay, drawInOverlay, drawInSpreadBbox, needReGen } from './s
  * 然后将d尺寸和权重拼接成真正程序并编译成program，再开始绘制
  */
 export function genGaussBlur(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   textureTarget: TextureCache,
@@ -156,7 +156,7 @@ function getDualTimesFromSigma(sigma: number) {
 }
 
 function genScaleGaussBlur(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   boxes: number[],
   dualTimes: number,
@@ -213,7 +213,7 @@ function genScaleGaussBlur(
 }
 
 export function genRadialBlur(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   textureTarget: TextureCache,
@@ -346,7 +346,7 @@ export function genRadialBlur(
  * 源码借鉴pixi：https://github.com/pixijs/filters
  */
 export function genMotionBlur(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   textureTarget: TextureCache,

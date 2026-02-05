@@ -1,6 +1,6 @@
 export type LoadImgRes = {
   success: boolean;
-  source?: HTMLImageElement;
+  source?: ImageBitmap;
   frames: VideoFrame[];
   width: number;
   height: number;
@@ -66,7 +66,7 @@ export async function loadImg(url: string, options?: RequestInit) {
         cache.count--;
         if (cache.count <= 0) {
           if (cache.res.source) {
-            URL.revokeObjectURL(cache.res.source.src);
+            cache.res.source.close();
           }
           cache.res.frames.forEach(item => item.close());
           delete HASH[url];
@@ -114,31 +114,60 @@ export async function loadImg(url: string, options?: RequestInit) {
       imageDecoder.close();
     }
   }
-  // 不支持则降级为静态图
+  // 不支持则降级为静态图，或本身就是静图
   const blob = new Blob([ab]);
-  const img = new Image();
-  img.src = URL.createObjectURL(blob);
   cache.count++;
-  return new Promise<LoadImgRes>((resolve) => {
-    img.onload = () => {
-      cache.state = State.LOADED;
-      cache.res.success = true;
-      cache.res.source = img;
-      cache.res.width = img.width;
-      cache.res.height = img.height;
+  cache.state = State.LOADED;
+  try {
+    const img = await createImageBitmap(blob, {
+      imageOrientation: 'flipY',
+      premultiplyAlpha: 'none',
+      colorSpaceConversion: 'none',
+    });
+    cache.res.success = true;
+    cache.res.source = img;
+    cache.res.width = img.width;
+    cache.res.height = img.height;
+    return new Promise<LoadImgRes>((resolve) => {
       resolve(cache.res);
       cache.list.splice(0).forEach(item => {
         cache.count++;
         item(cache.res);
       });
-    };
-    img.onerror = () => {
-      cache.state = State.LOADED;
+    });
+  } catch(e) {
+    cache.res.success = false;
+    return new Promise<LoadImgRes>((resolve) => {
       resolve(cache.res);
       cache.list.splice(0).forEach(item => {
         cache.count++;
         item(cache.res);
       });
-    };
-  });
+    });
+    // const img = new Image();
+    // cache.count++;
+    // img.src = URL.createObjectURL(blob);
+    // return new Promise<LoadImgRes>((resolve) => {
+    //   img.onload = () => {
+    //     cache.state = State.LOADED;
+    //     cache.res.success = true;
+    //     cache.res.source = img;
+    //     cache.res.width = img.width;
+    //     cache.res.height = img.height;
+    //     resolve(cache.res);
+    //     cache.list.splice(0).forEach(item => {
+    //       cache.count++;
+    //       item(cache.res);
+    //     });
+    //   };
+    //   img.onerror = () => {
+    //     cache.state = State.LOADED;
+    //     resolve(cache.res);
+    //     cache.list.splice(0).forEach(item => {
+    //       cache.count++;
+    //       item(cache.res);
+    //     });
+    //   };
+    // });
+  }
 }

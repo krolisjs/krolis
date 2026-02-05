@@ -10,7 +10,7 @@ import { drawInSpreadBbox, needReGen } from './spread';
 
 // https://docs.rainmeter.net/tips/colormatrix-guide/
 export function genColorMatrix(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   textureTarget: TextureCache,
@@ -112,7 +112,7 @@ export function genColorMatrix(
 }
 
 function genColorByMatrix(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   cacheProgram: CacheProgram,
   old: TextureCache,
   m: number[],

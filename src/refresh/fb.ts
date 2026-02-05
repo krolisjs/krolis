@@ -1,5 +1,5 @@
 export function genFrameBufferWithTexture(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   texture: WebGLTexture | undefined,
   width: number,
   height: number,
@@ -20,7 +20,7 @@ export function genFrameBufferWithTexture(
 }
 
 export function releaseFrameBuffer(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   frameBuffer: WebGLFramebuffer,
   width?: number,
   height?: number,

@@ -9,7 +9,7 @@ import { createTexture, drawLightDark, drawTextureCache } from '../gl/webgl';
 import { checkInRect } from './check';
 
 export function genLightDark(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   textureTarget: TextureCache,

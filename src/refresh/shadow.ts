@@ -9,7 +9,7 @@ import { checkInRect } from './check';
 import config from '../config';
 
 export function genShadow(
-  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  gl: WebGLRenderingContext | WebGL2RenderingContext,
   root: Root,
   node: Node,
   textureTarget: TextureCache,
