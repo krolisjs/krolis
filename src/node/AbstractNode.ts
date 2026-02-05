@@ -54,7 +54,6 @@ abstract class AbstractNode extends Event {
   mask?: AbstractNode;
   host?: Component;
   isMounted = false; // 是否在dom上
-  isDestroyed = false; // 是否永久被销毁，手动调用
   refreshLevel = RefreshLevel.REFLOW;
   hasCacheOp = false; // 是否计算过世界opacity
   localOpId = 0; // 同下面的matrix
@@ -172,7 +171,7 @@ abstract class AbstractNode extends Event {
     const children = parent.children;
     const i = children.indexOf(this);
     children.splice(i + 1, 0, node);
-    if (parent.isDestroyed) {
+    if (!parent.isMounted) {
       cb && cb(true);
       return;
     }
@@ -198,7 +197,7 @@ abstract class AbstractNode extends Event {
     const children = parent.children;
     const i = children.indexOf(this);
     children.splice(i, 0, node);
-    if (parent.isDestroyed) {
+    if (!parent.isMounted) {
       cb && cb(true);
       return;
     }

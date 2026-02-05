@@ -34,7 +34,7 @@ describe('Layout', () => {
         },
       ],
     }, {
-      headless: true,
+      void: true,
     });
     expect(root.refs['c1'].x).toBe(0);
     expect(root.refs['c1'].y).toBe(0);
@@ -93,7 +93,7 @@ describe('Layout', () => {
         },
       ],
     }, {
-      headless: true,
+      void: true,
     });
     expect(root.refs['c1'].x).toBe(10);
     expect(root.refs['c1'].y).toBe(20);

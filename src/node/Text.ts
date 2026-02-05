@@ -1509,11 +1509,12 @@ class Text extends Node {
       style,
       computedStyle,
       parent,
-      isDestroyed,
+      host,
+      isMounted,
       width: w,
       height: h,
     } = this;
-    if (isDestroyed || !parent) {
+    if (!isMounted || !parent || !host?.parent) {
       throw new Error('Can not edit a destroyed Text');
     }
     this.isEdit = true;

@@ -191,7 +191,7 @@ class Container extends Node {
     node.root = root;
     children.push(node);
     // 离屏情况，尚未添加到dom等
-    if (!root || this.isDestroyed) {
+    if (!root || !this.isMounted) {
       cb && cb(true);
       return;
     }
