@@ -24,19 +24,18 @@ export function drawGpuTextureCache(
       matrix,
       bbox,
       tc,
-      t,
       bindGroup,
       dx = 0,
       dy = 0,
     } = list[i];
     const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix, true);
     const data = new Float32Array([
-      t1.x, t1.y, t1.w || 1, 0, 0, opacity,
-      t4.x, t4.y, t4.w || 1, 0, 1, opacity,
-      t2.x, t2.y, t2.w || 1, 1, 0, opacity,
-      t4.x, t4.y, t4.w || 1, 0, 1, opacity,
-      t2.x, t2.y, t2.w || 1, 1, 0, opacity,
-      t3.x, t3.y, t3.w || 1, 1, 1, opacity,
+      t1.x, t1.y, t1.w || 1, tc ? tc.x1 : 0, tc ? tc.y1 : 0, opacity,
+      t4.x, t4.y, t4.w || 1, tc ? tc.x1 : 0, tc ? tc.y3 : 1, opacity,
+      t2.x, t2.y, t2.w || 1, tc ? tc.x3 : 1, tc ? tc.y1 : 0, opacity,
+      t4.x, t4.y, t4.w || 1, tc ? tc.x1 : 0, tc ? tc.y3 : 1, opacity,
+      t2.x, t2.y, t2.w || 1, tc ? tc.x3 : 1, tc ? tc.y1 : 0, opacity,
+      t3.x, t3.y, t3.w || 1, tc ? tc.x3 : 1, tc ? tc.y3 : 1, opacity,
     ]);
     const buffer = device.createBuffer({
       size: data.byteLength,

@@ -180,8 +180,8 @@ export function drawTextureCache(
     bbox,
     tc,
     t,
-    dx = 0,
-    dy = 0,
+    dx,
+    dy,
   } = drawData;
   bindTexture(gl, t, 0);
   const { t1, t2, t3, t4 } = bbox2Coords(bbox, cx, cy, dx, dy, matrix, flipY);
@@ -200,13 +200,13 @@ export function drawTextureCache(
   // 纹理坐标默认0,1，除非传入tc指定范围
   if (tc) {
     vtTex[0] = tc.x1;
-    vtTex[1] = tc.y3;
+    vtTex[1] = tc.y1;
     vtTex[2] = tc.x1;
-    vtTex[3] = tc.y1;
+    vtTex[3] = tc.y3;
     vtTex[4] = tc.x3;
-    vtTex[5] = tc.y3;
+    vtTex[5] = tc.y1;
     vtTex[6] = tc.x3;
-    vtTex[7] = tc.y1;
+    vtTex[7] = tc.y3;
   }
   else {
     vtTex[0] = 0;

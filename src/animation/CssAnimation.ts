@@ -520,10 +520,10 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
         else {
           let unit = 0;
           if (key === 'translateX' || key === 'translateZ' || key === 'perspective' || key === 'perspectiveSelf') {
-            unit = node.computedStyle.width;
+            unit = node._computedStyle.width;
           }
           else if (key === 'translateY') {
-            unit = node.computedStyle.height;
+            unit = node._computedStyle.height;
           }
           prev.transition.push({
             key,
@@ -633,7 +633,7 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
             diff.push(nv[i].v - pv[i].v);
           }
           else {
-            let unit = i ? node.computedStyle.height : node.computedStyle.width;
+            let unit = i ? node._computedStyle.height : node._computedStyle.width;
             prev.transition.push({
               key,
               diff: calLengthByUnit(nv[i], pv[i], unit),
