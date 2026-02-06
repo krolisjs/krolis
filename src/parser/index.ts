@@ -5,7 +5,8 @@ import Text from '../node/Text';
 import Video from '../node/Video';
 import Audio from '../node/Audio';
 import Root from '../node/Root';
-import Lottie from '../node/Lottie';
+// import Lottie from '../node/Lottie';
+import nodePkg from '../node';
 import Polyline from '../node/geom/Polyline';
 import { Item, ItemRoot, ParserOptions } from './define';
 import AbstractNode, { NodeType } from '../node/AbstractNode';
@@ -49,7 +50,7 @@ export function parseJSON(json: Item | AbstractNode) {
     node = new Audio(props);
   }
   else if (tagName === 'lottie') {
-    node = new Lottie(props);
+    node = new nodePkg.Lottie(props);
   }
   else if (tagName === 'polyline') {
     node = new Polyline(props);
