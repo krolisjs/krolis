@@ -65,5 +65,5 @@ export default {
   indexedDB: false,
   encoderFrameQue: 0, // 渲染传给合成时帧队列缓存多少，0为一帧一帧渲染等待合成，负数为无穷大，建议4低内存高并发
   webgl2: true, // 是否尝试使用webgl2
-  webgpu: true, // 是否尝试使用webgpu
+  webgpu: false, // 是否尝试使用webgpu
 };
