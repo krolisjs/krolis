@@ -81,7 +81,7 @@ export const DEFAULT_STYLE = {
 };
 
 export const DEFAULT_COMPUTED_STYLE = {
-  position: Position.ABSOLUTE,
+  position: Position.STATIC,
   display: Display.BLOCK,
   left: 0,
   top: 0,

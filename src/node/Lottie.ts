@@ -36,7 +36,7 @@ class Lottie extends Node {
     this._currentTime = props.currentTime || 0;
     const cb = () => {
       // @ts-ignore
-      const lottie = window.lottie as any;
+      const lottie = window.lottie as any; console.log(lottie)
       if (!lottie) {
         throw new Error('Missing lottie-web library');
       }
@@ -72,7 +72,7 @@ class Lottie extends Node {
           instance.goToAndStop(this._currentTime);
         }
         if (this.isMounted) {
-          const { left, top, right, bottom, width, height } = this.style;
+          const { left, top, right, bottom, width, height } = this._style;
           if ((left.u === StyleUnit.AUTO || right.u === StyleUnit.AUTO) && width.u === StyleUnit.AUTO
             || (top.u === StyleUnit.AUTO || bottom.u === StyleUnit.AUTO) && height.u === StyleUnit.AUTO
           ) {
@@ -112,7 +112,7 @@ class Lottie extends Node {
   // 自适应尺寸情况下使用图片本身的尺寸，只定义了一方的情况下使用等比
   override lay(x: number, y: number, w: number, h: number) {
     super.lay(x, y, w, h);
-    const { style, computedStyle, _json } = this;
+    const { _style: style, _computedStyle: computedStyle, _json } = this;
     const { left, top, right, bottom, width, height } = style;
     if (_json) {
       const autoW = (left.u === StyleUnit.AUTO || right.u === StyleUnit.AUTO) && width.u === StyleUnit.AUTO;
@@ -164,14 +164,14 @@ class Lottie extends Node {
       }
     }
     else {
-      this.hasContent = this.computedStyle.backgroundColor[3] > 0;
+      this.hasContent = this._computedStyle.backgroundColor[3] > 0;
     }
     return this.hasContent;
   }
 
   override renderCanvas() {
-    const { _json, _currentTime, _metaData, canvas, computedStyle } = this;
     super.renderCanvas();
+    const { _json, _currentTime, _metaData, canvas, _computedStyle: computedStyle } = this;
     const bbox = ceilBbox(this.bbox.slice(0));
     const x = bbox[0],
       y = bbox[1];

@@ -15,7 +15,7 @@ export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
     const root = node.root!;
     let target: AbstractNode | undefined = node;
     while (target && target !== root) {
-      if ([Position.ABSOLUTE, Position.RELATIVE].includes(target.computedStyle.position)) {
+      if ([Position.ABSOLUTE].includes(target.style.position.v)) {
         break;
       }
       target = target.parent || target.host?.parent;
@@ -30,14 +30,19 @@ export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
       }
       parent = parent.parent || parent.host?.parent;
     }
-    if (!parent) {
+    if (target === root) {
+      root.reLayout();
+    }
+    else if (!parent) {
       return;
     }
-    if (target.style.position.v === Position.ABSOLUTE) {
-      target.layoutAbs(parent, parent.x, parent.y, parent.computedStyle.width, parent.computedStyle.height);
-    }
     else {
-      target.layoutFlow(parent, parent.x, parent.y, parent.computedStyle.width, parent.computedStyle.height, false);
+      if (target.style.position.v === Position.ABSOLUTE) {
+        target.layoutAbs(parent, parent.x, parent.y, parent.computedStyle.width, parent.computedStyle.height);
+      }
+      else {
+        target.layoutFlow(parent, parent.x, parent.y, parent.computedStyle.width, parent.computedStyle.height, false);
+      }
     }
     if (lv & RefreshLevel.ADD_DOM) {
       node.didMount();
