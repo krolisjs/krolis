@@ -381,13 +381,13 @@ class Bitmap extends Node {
         const h = width / ratio;
         const d = Math.abs(height - h) * 0.5;
         const p = d / h;
-        tc = { x1: 0, y3: p, x3: 1, y1: 1 - p };
+        tc = { x1: 0, y1: p, x3: 1, y3: 1 - p };
       }
       else if (ratio2 < ratio) {
         const w = height * ratio;
         const d = Math.abs(width - w) * 0.5;
         const p = d / w;
-        tc = { x1: p, y3: 0, x3: 1 - p, y1: 1 };
+        tc = { x1: p, y1: 0, x3: 1 - p, y3: 1 };
       }
     }
     return tc;
