@@ -8,7 +8,7 @@ _Derived from Kronos (Titan of Time) + Belisama (Goddess of Fire & Craft)._
 [![NPM version](https://img.shields.io/npm/v/krolis.svg)](https://npmjs.org/package/krolis)
 ![CI](https://github.com/krolisjs/krolis/workflows/CI/badge.svg)
 
-[![logo](https://raw.githubusercontent.com/krolisjs/krolis/master/logo.svg)](https://raw.githubusercontent.com/krolisjs/krolis/master/logo.svg)
+<img src="https://raw.githubusercontent.com/krolisjs/krolis/master/logo.svg" width="256" height="256" />
 
 ## Install
 
