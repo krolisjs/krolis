@@ -15,6 +15,7 @@ import codec from '../codec';
 import inject from '../util/inject';
 import { CAN_PLAY, ERROR, META, WAITING } from '../refresh/refreshEvent';
 import { ceilBbox } from '../math/bbox';
+import GpuTextureCache from '../refresh/GpuTextureCache';
 
 class Video extends Node {
   private _src: string;
@@ -161,7 +162,7 @@ class Video extends Node {
   // 自适应尺寸情况下使用图片本身的尺寸
   override lay(x: number, y: number, w: number, h: number) {
     super.lay(x, y, w, h);
-    const { style, computedStyle, _metaData } = this;
+    const { _style: style, _computedStyle: computedStyle, _metaData } = this;
     const { left, top, right, bottom, width, height } = style;
     if (_metaData?.video) {
       const autoW = (left.u === StyleUnit.AUTO || right.u === StyleUnit.AUTO) && width.u === StyleUnit.AUTO;
@@ -207,7 +208,7 @@ class Video extends Node {
 
   override calRepaintStyle(lv: RefreshLevel) {
     super.calRepaintStyle(lv);
-    const { computedStyle, videoFrame } = this;
+    const { _computedStyle: computedStyle, videoFrame } = this;
     this.isPure = computedStyle.backgroundColor[3] <= 0;
     // 注意圆角影响
     if (this.isPure && videoFrame) {
@@ -249,14 +250,14 @@ class Video extends Node {
 
   override calContent() {
     this.hasContent = false;
-    if (this._videoFrame || this.computedStyle.backgroundColor[3] > 0) {
+    if (this._videoFrame || this._computedStyle.backgroundColor[3] > 0) {
       this.hasContent = true;
     }
     return this.hasContent;
   }
 
   override renderCanvas() {
-    const { isPure, videoFrame, computedStyle } = this;
+    const { isPure, videoFrame, _computedStyle: computedStyle } = this;
     // 纯视频
     if (isPure) {
       this.canvasCache?.release();
@@ -356,65 +357,104 @@ class Video extends Node {
     }
   }
 
+  private genTc() {
+    const videoFrame = this._videoFrame;
+    if (!videoFrame) {
+      return;
+    }
+    let { width, height, objectFit } = this._computedStyle;
+    let r = this._rect;
+    let tc: { x1: number, y1: number, x3: number, y3: number } | undefined;
+    const ratio = videoFrame.displayWidth / videoFrame.displayHeight;
+    const ratio2 = width / height;
+    if (objectFit === ObjectFit.CONTAIN) {
+      if (ratio2 > ratio) {
+        const w = height * ratio;
+        const d = (width - w) * 0.5;
+        r = r.slice(0);
+        r[0] += d;
+        r[2] -= d;
+      }
+      else if (ratio2 < ratio) {
+        const h = width / ratio;
+        const d = (height - h) * 0.5;
+        r = r.slice(0);
+        r[1] += d;
+        r[3] -= d;
+      }
+    }
+    else if (objectFit === ObjectFit.COVER) {
+      if (ratio2 > ratio) {
+        const h = width / ratio;
+        const d = Math.abs(height - h) * 0.5;
+        const p = d / h;
+        tc = { x1: 0, y3: p, x3: 1, y1: 1 - p };
+      }
+      else if (ratio2 < ratio) {
+        const w = height * ratio;
+        const d = Math.abs(width - w) * 0.5;
+        const p = d / w;
+        tc = { x1: p, y3: 0, x3: 1 - p, y1: 1 };
+      }
+    }
+    return tc;
+  }
+
   override genTexture(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     const { isPure, videoFrame, canvasCache } = this;
     if (isPure) {
       if (videoFrame) {
         if (videoFrame.displayWidth > config.maxTextureSize || videoFrame.displayHeight > config.maxTextureSize) {
           if (canvasCache?.available && TextureCache.hasCanvasCacheInstance(canvasCache)) {
-            const tc = TextureCache.getCanvasCacheInstance(gl, canvasCache, this._rect || this.rect);
-            this.textureTarget = this.textureCache = tc;
+            const cache = TextureCache.getCanvasCacheInstance(gl, canvasCache, this._rect);
+            this.textureTarget = this.textureCache = cache;
           }
           else {
             this.renderCanvas();
-            const tc = TextureCache.getCanvasCacheInstance(gl, this.canvasCache!, this._rect || this.rect);
-            this.textureTarget = this.textureCache = tc;
+            const cache = TextureCache.getCanvasCacheInstance(gl, this.canvasCache!, this._rect);
+            this.textureTarget = this.textureCache = cache;
             this.canvasCache!.release();
           }
         }
         else {
-          let { width, height, objectFit } = this.computedStyle;
-          let r = this._rect || this.rect;
-          let tc: { x1: number, y1: number, x3: number, y3: number } | undefined;
-          const ratio = videoFrame.displayWidth / videoFrame.displayHeight;
-          const ratio2 = width / height;
-          if (objectFit === ObjectFit.CONTAIN) {
-            if (ratio2 > ratio) {
-              const w = height * ratio;
-              const d = (width - w) * 0.5;
-              r = r.slice(0);
-              r[0] += d;
-              r[2] -= d;
-            }
-            else if (ratio2 < ratio) {
-              const h = width / ratio;
-              const d = (height - h) * 0.5;
-              r = r.slice(0);
-              r[1] += d;
-              r[3] -= d;
-            }
-          }
-          else if (objectFit === ObjectFit.COVER) {
-            if (ratio2 > ratio) {
-              const h = width / ratio;
-              const d = Math.abs(height - h) * 0.5;
-              const p = d / h;
-              tc = { x1: 0, y3: p, x3: 1, y1: 1 - p };
-            }
-            else if (ratio2 < ratio) {
-              const w = height * ratio;
-              const d = Math.abs(width - w) * 0.5;
-              const p = d / w;
-              tc = { x1: p, y3: 0, x3: 1 - p, y1: 1 };
-            }
-          }
-          const textureCache = TextureCache.getVideoFrameInstance(gl, videoFrame, r, tc);
-          this.textureTarget = this.textureCache = textureCache;
+          const r = this._rect;
+          const tc = this.genTc();
+          const cache = TextureCache.getVideoFrameInstance(gl, videoFrame, r, tc);
+          this.textureTarget = this.textureCache = cache;
         }
       }
     }
     else {
       super.genTexture(gl);
+    }
+  }
+
+  override genGpuTexture(ctx: GPUCanvasContext, device: GPUDevice, layout: GPUBindGroupLayout, sampler: GPUSampler) {
+    const { isPure, videoFrame, canvasCache } = this;
+    if (isPure) {
+      if (videoFrame) {
+        if (videoFrame.displayWidth > config.maxTextureDimension2D || videoFrame.displayHeight > config.maxTextureDimension2D) {
+          if (canvasCache?.available && TextureCache.hasCanvasCacheInstance(canvasCache)) {
+            const cache = GpuTextureCache.getCanvasCacheInstance(ctx, device, layout, sampler, canvasCache, this._rect);
+            this.gpuTextureTarget = this.gpuTextureCache = cache;
+          }
+          else {
+            this.renderCanvas();
+            const cache = GpuTextureCache.getCanvasCacheInstance(ctx, device, layout, sampler, this.canvasCache!, this._rect);
+            this.gpuTextureTarget = this.gpuTextureCache = cache;
+            this.canvasCache!.release();
+          }
+        }
+        else {
+          const r = this._rect;
+          const tc = this.genTc();
+          const cache = GpuTextureCache.getVideoFrameInstance(ctx, device, layout, sampler, videoFrame, r, tc);
+          this.gpuTextureTarget = this.gpuTextureCache = cache;
+        }
+      }
+    }
+    else {
+      super.genGpuTexture(ctx, device, layout, sampler);
     }
   }
 

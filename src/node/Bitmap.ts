@@ -12,6 +12,7 @@ import config from '../config';
 import { canvasPolygon } from '../refresh/paint';
 import { LOAD } from '../refresh/refreshEvent';
 import { ceilBbox } from '../math/bbox';
+import GpuTextureCache from '../refresh/GpuTextureCache';
 
 class Bitmap extends Node {
   _src: string;
@@ -73,7 +74,7 @@ class Bitmap extends Node {
   // 自适应尺寸情况下使用图片本身的尺寸，只定义了一方的情况下使用等比
   override lay(x: number, y: number, w: number, h: number) {
     super.lay(x, y, w, h);
-    const { style, computedStyle, loader } = this;
+    const { _style: style, _computedStyle: computedStyle, loader } = this;
     const { left, top, right, bottom, width, height } = style;
     if (loader) {
       const autoW = (left.u === StyleUnit.AUTO || right.u === StyleUnit.AUTO) && width.u === StyleUnit.AUTO;
@@ -119,7 +120,7 @@ class Bitmap extends Node {
 
   override calRepaintStyle(lv: RefreshLevel) {
     super.calRepaintStyle(lv);
-    const { computedStyle, loader } = this;
+    const { _computedStyle: computedStyle, loader } = this;
     this.isPure = computedStyle.backgroundColor[3] <= 0;
     // 注意圆角影响
     if (this.isPure && loader?.success) {
@@ -173,13 +174,13 @@ class Bitmap extends Node {
       }
     }
     else {
-      this.hasContent = this.computedStyle.backgroundColor[3] > 0;
+      this.hasContent = this._computedStyle.backgroundColor[3] > 0;
     }
     return this.hasContent;
   }
 
   override renderCanvas() {
-    const { isPure, loader, computedStyle } = this;
+    const { isPure, loader, _computedStyle: computedStyle } = this;
     // 纯图片
     if (isPure) {
       this.canvasCache?.release();
@@ -278,7 +279,7 @@ class Bitmap extends Node {
     // 复合类型
     else {
       super.renderCanvas();
-      const computedStyle = this.computedStyle;
+      const computedStyle = this._computedStyle;
       const bbox = ceilBbox(this.bbox.slice(0));
       const x = bbox[0],
         y = bbox[1];
@@ -349,6 +350,49 @@ class Bitmap extends Node {
     }
   }
 
+  private genTc() {
+    const loader = this;
+    if (!loader) {
+      return;
+    }
+    let { width, height, objectFit } = this._computedStyle;
+    let r = this._rect;
+    let tc: { x1: number, y1: number, x3: number, y3: number } | undefined;
+    const ratio = loader.width / loader.height;
+    const ratio2 = width / height;
+    if (objectFit === ObjectFit.CONTAIN) {
+      if (ratio2 > ratio) {
+        const w = height * ratio;
+        const d = (width - w) * 0.5;
+        r = r.slice(0);
+        r[0] += d;
+        r[2] -= d;
+      }
+      else if (ratio2 < ratio) {
+        const h = width / ratio;
+        const d = (height - h) * 0.5;
+        r = r.slice(0);
+        r[1] += d;
+        r[3] -= d;
+      }
+    }
+    else if (objectFit === ObjectFit.COVER) {
+      if (ratio2 > ratio) {
+        const h = width / ratio;
+        const d = Math.abs(height - h) * 0.5;
+        const p = d / h;
+        tc = { x1: 0, y3: p, x3: 1, y1: 1 - p };
+      }
+      else if (ratio2 < ratio) {
+        const w = height * ratio;
+        const d = Math.abs(width - w) * 0.5;
+        const p = d / w;
+        tc = { x1: p, y3: 0, x3: 1 - p, y1: 1 };
+      }
+    }
+    return tc;
+  }
+
   override genTexture(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     const { isPure, loader, canvasCache } = this;
     if (isPure) {
@@ -356,69 +400,76 @@ class Bitmap extends Node {
       if (loader?.success) {
         if (loader.width > config.maxTextureSize || loader.height > config.maxTextureSize) {
           if (canvasCache?.available && TextureCache.hasCanvasCacheInstance(canvasCache)) {
-            const tc = TextureCache.getCanvasCacheInstance(gl, canvasCache, this._rect);
-            this.textureTarget = this.textureCache = tc;
+            const cache = TextureCache.getCanvasCacheInstance(gl, canvasCache, this._rect);
+            this.textureTarget = this.textureCache = cache;
           }
           else {
             this.renderCanvas();
-            const tc = TextureCache.getCanvasCacheInstance(gl, this.canvasCache!, this._rect);
-            this.textureTarget = this.textureCache = tc;
+            const cache = TextureCache.getCanvasCacheInstance(gl, this.canvasCache!, this._rect);
+            this.textureTarget = this.textureCache = cache;
             this.canvasCache!.release();
           }
         }
         else {
-          let { width, height, objectFit } = this.computedStyle;
-          let r = this._rect;
-          let tc: { x1: number, y1: number, x3: number, y3: number } | undefined;
-          const ratio = loader.width / loader.height;
-          const ratio2 = width / height;
-          if (objectFit === ObjectFit.CONTAIN) {
-            if (ratio2 > ratio) {
-              const w = height * ratio;
-              const d = (width - w) * 0.5;
-              r = r.slice(0);
-              r[0] += d;
-              r[2] -= d;
-            }
-            else if (ratio2 < ratio) {
-              const h = width / ratio;
-              const d = (height - h) * 0.5;
-              r = r.slice(0);
-              r[1] += d;
-              r[3] -= d;
-            }
-          }
-          else if (objectFit === ObjectFit.COVER) {
-            if (ratio2 > ratio) {
-              const h = width / ratio;
-              const d = Math.abs(height - h) * 0.5;
-              const p = d / h;
-              tc = { x1: 0, y3: p, x3: 1, y1: 1 - p };
-            }
-            else if (ratio2 < ratio) {
-              const w = height * ratio;
-              const d = Math.abs(width - w) * 0.5;
-              const p = d / w;
-              tc = { x1: p, y3: 0, x3: 1 - p, y1: 1 };
-            }
-          }
+          const r = this._rect;
+          const tc = this.genTc();
           if (loader.frames.length) {
             const index = Math.min(loader.frames.length - 1, Math.max(0, this._frameIndex));
             const videoFrame = loader.frames[index];
             if (videoFrame) {
-              const textureCache = TextureCache.getVideoFrameInstance(gl, videoFrame, r, tc);
-              this.textureTarget = this.textureCache = textureCache;
+              const cache = TextureCache.getVideoFrameInstance(gl, videoFrame, r, tc);
+              this.textureTarget = this.textureCache = cache;
             }
           }
           else if (loader.source) {
-            const textureCache = TextureCache.getImgInstance(gl, loader.source, r, tc);
-            this.textureTarget = this.textureCache = textureCache;
+            const cache = TextureCache.getImgInstance(gl, loader.source, r, tc);
+            this.textureTarget = this.textureCache = cache;
           }
         }
       }
     }
     else {
       super.genTexture(gl);
+    }
+  }
+
+  override genGpuTexture(ctx: GPUCanvasContext, device: GPUDevice, layout: GPUBindGroupLayout, sampler: GPUSampler) {
+    const { isPure, loader, canvasCache } = this;
+    if (isPure) {
+      // 肯定有
+      if (loader?.success) {
+        if (loader.width > config.maxTextureDimension2D || loader.height > config.maxTextureDimension2D) {
+          if (canvasCache?.available && GpuTextureCache.hasCanvasCacheInstance(canvasCache)) {
+            const cache = GpuTextureCache.getCanvasCacheInstance(ctx, device, layout, sampler, canvasCache, this._rect);
+            this.gpuTextureTarget = this.gpuTextureCache = cache;
+          }
+          else {
+            this.renderCanvas();
+            const cache = GpuTextureCache.getCanvasCacheInstance(ctx, device, layout, sampler, this.canvasCache!, this._rect);
+            this.gpuTextureTarget = this.gpuTextureCache = cache;
+            this.canvasCache!.release();
+          }
+        }
+        else {
+          const r = this._rect;
+          const tc = this.genTc();
+          if (loader.frames.length) {
+            const index = Math.min(loader.frames.length - 1, Math.max(0, this._frameIndex));
+            const videoFrame = loader.frames[index];
+            if (videoFrame) {
+              const cache = GpuTextureCache.getVideoFrameInstance(ctx, device, layout, sampler, videoFrame, r, tc);
+              this.gpuTextureTarget = this.gpuTextureCache = cache;
+            }
+          }
+          else if (loader.source) {
+            const cache = GpuTextureCache.getImgInstance(ctx, device, layout, sampler, loader.source, r, tc);
+            this.gpuTextureTarget = this.gpuTextureCache = cache;
+          }
+        }
+      }
+    }
+    else {
+      super.genGpuTexture(ctx, device, layout, sampler);
     }
   }
 

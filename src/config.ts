@@ -1,10 +1,10 @@
 let max = 2048;
 let manual = false;
-let MAX_TEXTURE_SIZE = max;
 let hasInit = false;
 
-let maxTextureDimension2D = 8192;
-let maxTextureArrayLayers = 256;
+let maxGpu = 2048;
+let manualGpu = false;
+let hasInitGpu = false;
 
 export default {
   debug: false,
@@ -14,16 +14,14 @@ export default {
   },
   set maxTextureSize(v: number) {
     if (hasInit) {
-      max = Math.min(v, MAX_TEXTURE_SIZE);
+      max = Math.min(v, this.MAX_TEXTURE_SIZE);
     }
     else {
       max = v;
     }
     manual = true;
   },
-  get MAX_TEXTURE_SIZE() {
-    return MAX_TEXTURE_SIZE;
-  },
+  MAX_TEXTURE_SIZE: 8192,
   MAX_TEXTURE_IMAGE_UNITS: 8,
   MAX_VARYING_VECTORS: 15,
   // 初始化root的时候才会调用
@@ -36,19 +34,35 @@ export default {
       max = maxSize;
     }
     hasInit = true;
-    MAX_TEXTURE_SIZE = maxSize;
+    this.MAX_TEXTURE_SIZE = maxSize;
     this.MAX_TEXTURE_IMAGE_UNITS = maxUnits;
     this.MAX_VARYING_VECTORS = maxVectors;
   },
+  MAX_TEXTURE_DIMENSION_2D: 8192,
+  MAX_TEXTURE_ARRAY_LAYERS: 1024,
   get maxTextureDimension2D() {
-    return maxTextureDimension2D;
+    return maxGpu;
   },
-  get maxTextureArrayLayers() {
-    return maxTextureArrayLayers;
+  set maxTextureDimension2D(v: number) {
+    if (hasInitGpu) {
+      maxGpu = Math.min(v, this.MAX_TEXTURE_DIMENSION_2D);
+    }
+    else {
+      maxGpu = v;
+    }
+    manualGpu = true;
   },
   initGpu(mtd2d: number, mtal: number) {
-    maxTextureDimension2D = mtd2d;
-    maxTextureArrayLayers = mtal;
+    if (!manualGpu) {
+      maxGpu = Math.min(maxGpu, mtd2d);
+    }
+    // 手动事先设置了超限的尺寸需缩小
+    else if (mtd2d < maxGpu) {
+      maxGpu = mtd2d;
+    }
+    hasInitGpu = true;
+    this.MAX_TEXTURE_DIMENSION_2D = mtd2d;
+    this.MAX_TEXTURE_ARRAY_LAYERS = mtal;
   },
   defaultFontFamily: 'Arial',
   defaultFontSize: 16,

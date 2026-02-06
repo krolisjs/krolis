@@ -275,17 +275,17 @@ const uArray = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS);
 for (let i = 0; i < MAX_TEXTURE_IMAGE_UNITS; i++) {
   uArray[i] = i;
 }
-const indices = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 7 - 1);
-for (let i = 0; i < indices.length; i++) {
-  const rem = (i + 1) % 5;
-  if (rem) {
-    const n = Math.floor(i / 5);
-    indices[i] = n * 4 + rem - 1;
-  }
-  else {
-    indices[i] = 65535;
-  }
-}
+// const indices = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 7 - 1);
+// for (let i = 0; i < indices.length; i++) {
+//   const rem = (i + 1) % 5;
+//   if (rem) {
+//     const n = Math.floor(i / 5);
+//     indices[i] = n * 4 + rem - 1;
+//   }
+//   else {
+//     indices[i] = 65535;
+//   }
+// }
 
 function drawPrItem(
   gl: WebGL2RenderingContext,
