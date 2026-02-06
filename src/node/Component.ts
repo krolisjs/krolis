@@ -41,16 +41,15 @@ class Component<T extends ComponentProps = ComponentProps> extends AbstractNode 
   constructor(props: T, children: AbstractNode[] = []) {
     super(props);
     this.type = NodeType.COMPONENT;
-    this.isComponent = true;
     this.children = children;
     this.refs = {};
     this._isShadowDom = !!props.isShadowDom;
     let sr = this._shadowRoot = this.render() || undefined;
     while (sr) {
-      if (sr.isComponent) {
+      if (sr.type === NodeType.COMPONENT) {
         sr = (sr as unknown as Component)._shadowRoot;
       }
-      else if (sr.isNode) {
+      else {
         this._shadow = sr as Node;
         break;
       }

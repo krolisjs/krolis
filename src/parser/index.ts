@@ -8,7 +8,7 @@ import Root from '../node/Root';
 import Lottie from '../node/Lottie';
 import Polyline from '../node/geom/Polyline';
 import { Item, ItemRoot, ParserOptions } from './define';
-import AbstractNode from '../node/AbstractNode';
+import AbstractNode, { NodeType } from '../node/AbstractNode';
 import Component from '../node/Component';
 
 export function parseJSON(json: Item | AbstractNode) {
@@ -61,7 +61,7 @@ export function parseJSON(json: Item | AbstractNode) {
     if (!Array.isArray(animations)) {
       throw new Error('Animations must be an array');
     }
-    if (node.isComponent) {
+    if (node.type === NodeType.COMPONENT) {
       const shadow = (node as Component).shadow;
       if (shadow) {
         shadow.animationRecords = animations;

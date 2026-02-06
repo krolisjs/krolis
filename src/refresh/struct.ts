@@ -35,7 +35,7 @@ export function renderWebgl(
     // 不可见和透明的跳过
     const computedStyle = node.computedStyle;
     if (shouldIgnore(computedStyle)) {
-      for (let j = i + 1; j < i + total; j++) {
+      for (let j = i; j < i + total; j++) {
         const node = structs[j].node;
         calWorldMatrixAndOpacity(node, j, node.parent || node.host?.parent);
       }

@@ -65,7 +65,16 @@ export function genMerge(
       mixBlendMode,
       overflow,
       maskMode,
+      visibility,
     } = computedStyle;
+    if (visibility === Visibility.HIDDEN) {
+      i += total;
+      if (maskMode) {
+        const n = genNextCount(node, structs, i, lv, total);
+        return n;
+      }
+      continue;
+    }
     // 非单节点透明需汇总子树，有mask的也需要，已经存在的无需汇总
     const needTotal =
       (
@@ -243,14 +252,13 @@ function genNextCount(
     const { node: node2, lv: lv2 } = structs[i];
     const computedStyle = node2.computedStyle;
     if (lv > lv2) {
-      node.struct.next = i - index - total - 1;
-      break;
+      return node.struct.next = i - index - total - 1;
     }
     else if (i === (len - 1) || (computedStyle.breakMask && lv === lv2)) {
-      node.struct.next = i - index - total;
-      break;
+      return node.struct.next = i - index - total;
     }
   }
+  return 0;
 }
 
 /**

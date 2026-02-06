@@ -82,7 +82,6 @@ class Node extends AbstractNode {
   constructor(props: Props) {
     super(props);
     this.type = NodeType.NODE;
-    this.isNode = true;
     this._style = normalize(getDefaultJStyle(props.style));
     this._computedStyle = getDefaultComputedStyle();
     this._struct = {
@@ -1306,9 +1305,10 @@ class Node extends AbstractNode {
       _style: style,
       _computedStyle: computedStyle,
       parent,
+      host,
       isMounted,
     } = this;
-    if (!isMounted || !parent) {
+    if (!isMounted || !parent && !host?.parent) {
       throw new Error('Can not resize a destroyed Node or Root');
     }
     const {
@@ -1319,7 +1319,7 @@ class Node extends AbstractNode {
       translateX,
       translateY,
     } = style;
-    const { width: pw, height: ph } = parent;
+    const { width: pw, height: ph } = parent || host?.parent!;
     // 理论sketch中只有-50%，但人工可能有其他值，可统一处理
     if (translateX.v && translateX.u === StyleUnit.PERCENT) {
       const v = translateX.v * width * 0.01;
@@ -1373,6 +1373,7 @@ class Node extends AbstractNode {
       _style: style,
       _computedStyle: computedStyle,
       parent,
+      host,
       width: w,
       height: h,
     } = this;
@@ -1382,7 +1383,7 @@ class Node extends AbstractNode {
       top,
       bottom,
     } = style;
-    const { width: pw, height: ph } = parent!;
+    const { width: pw, height: ph } = parent || host?.parent!;
     if (translateX.v && translateX.u === StyleUnit.PERCENT) {
       const v = translateX.v * w * 0.01;
       if (left.u === StyleUnit.PX) {

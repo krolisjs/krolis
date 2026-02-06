@@ -1,5 +1,5 @@
 import { RefreshLevel } from './level';
-import AbstractNode from '../node/AbstractNode';
+import AbstractNode, { NodeType } from '../node/AbstractNode';
 import Component from '../node/Component';
 import { Position } from '../style/define';
 
@@ -9,7 +9,7 @@ export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
   }
   else {
     // 没实现render()的
-    if (node.isComponent && !(node as Component).shadow) {
+    if (node.type === NodeType.COMPONENT && !(node as Component).shadow) {
       return;
     }
     const root = node.root!;

@@ -43,6 +43,9 @@ export default {
   get maxTextureDimension2D() {
     return maxTextureDimension2D;
   },
+  get maxTextureArrayLayers() {
+    return maxTextureArrayLayers;
+  },
   initGpu(mtd2d: number, mtal: number) {
     maxTextureDimension2D = mtd2d;
     maxTextureArrayLayers = mtal;

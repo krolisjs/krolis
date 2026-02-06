@@ -41,8 +41,6 @@ let id = 0;
 abstract class AbstractNode extends Event {
   id = id++;
   type = NodeType.ABSTRACT;
-  isNode = false;
-  isComponent = false;
   props: Props;
   uuid: string;
   name?: string;
