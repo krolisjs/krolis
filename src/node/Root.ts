@@ -170,7 +170,6 @@ class Root extends Container {
     config.initGl(
       gl.getParameter(gl.MAX_TEXTURE_SIZE),
       gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS),
-      gl.getParameter(gl.MAX_VARYING_VECTORS),
     );
     this.initProgram(gl);
     this.afterAppend();

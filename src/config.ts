@@ -21,11 +21,10 @@ export default {
     }
     manual = true;
   },
-  MAX_TEXTURE_SIZE: 8192,
-  MAX_TEXTURE_IMAGE_UNITS: 8,
-  MAX_VARYING_VECTORS: 15,
+  MAX_TEXTURE_SIZE: 2048,
+  MAX_TEXTURE_IMAGE_UNITS: 16,
   // 初始化root的时候才会调用
-  initGl(maxSize: number, maxUnits: number, maxVectors: number) {
+  initGl(maxSize: number, maxUnits: number) {
     if (!manual) {
       max = Math.min(max, maxSize);
     }
@@ -36,10 +35,9 @@ export default {
     hasInit = true;
     this.MAX_TEXTURE_SIZE = maxSize;
     this.MAX_TEXTURE_IMAGE_UNITS = maxUnits;
-    this.MAX_VARYING_VECTORS = maxVectors;
   },
   MAX_TEXTURE_DIMENSION_2D: 8192,
-  MAX_TEXTURE_ARRAY_LAYERS: 1024,
+  MAX_TEXTURE_ARRAY_LAYERS: 256,
   get maxTextureDimension2D() {
     return maxGpu;
   },

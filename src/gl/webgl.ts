@@ -1,6 +1,7 @@
 import { calRectPoints } from '../math/matrix';
 import inject from '../util/inject';
 import CacheProgram from './CacheProgram';
+import config from '../config';
 
 export function initShaders(
   gl: WebGLRenderingContext | WebGL2RenderingContext,
@@ -245,18 +246,6 @@ export function drawTextureCache(
     const u_texture = cacheProgram.uniform.u_texture;
     gl.uniform1i(u_texture, 0);
   }
-  // clip范围
-  // if (uniformValue.u_clip_x1 !== x1
-  //   || uniformValue.u_clip_y1 !== y1
-  //   || uniformValue.u_clip_x2 !== x2
-  //   || uniformValue.u_clip_y2 !== y2) {
-  //   uniformValue.u_clip_x1 = x1;
-  //   uniformValue.u_clip_y1 = y1;
-  //   uniformValue.u_clip_x2 = x2;
-  //   uniformValue.u_clip_y2 = y2;
-  //   const u_clip = cacheProgram.uniform.u_clip;
-  //   gl.uniform4f(u_clip, x1, y1, x2, y2);
-  // }
   // 渲染并销毁
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   gl.deleteBuffer(pointBuffer);
@@ -265,27 +254,11 @@ export function drawTextureCache(
   gl.disableVertexAttribArray(a_texCoords);
 }
 
-const MAX_TEXTURE_IMAGE_UNITS = 16;
-const vtPoint = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 18);
-const vtTex = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 12);
-const vtOpacity = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 6);
-const vtTexIndex = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 6);
-// const vtClip = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 16);
-const uArray = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS);
-for (let i = 0; i < MAX_TEXTURE_IMAGE_UNITS; i++) {
-  uArray[i] = i;
-}
-// const indices = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 7 - 1);
-// for (let i = 0; i < indices.length; i++) {
-//   const rem = (i + 1) % 5;
-//   if (rem) {
-//     const n = Math.floor(i / 5);
-//     indices[i] = n * 4 + rem - 1;
-//   }
-//   else {
-//     indices[i] = 65535;
-//   }
-// }
+let vtPoint: Float32Array | undefined;
+let vtTex: Float32Array | undefined;
+let vtOpacity: Float32Array | undefined;
+let vtTexIndex: Uint16Array | undefined;
+let uArray: Uint16Array | undefined;
 
 function drawPrItem(
   gl: WebGL2RenderingContext,
@@ -296,8 +269,24 @@ function drawPrItem(
   flipY = false,
 ) {
   const length = list.length;
+  const MAX_TEXTURE_IMAGE_UNITS = config.MAX_TEXTURE_IMAGE_UNITS;
   if (length > MAX_TEXTURE_IMAGE_UNITS) {
     throw new Error('DrawData size is ' + length + ', max is ' + MAX_TEXTURE_IMAGE_UNITS);
+  }
+  if (!vtPoint) {
+    vtPoint = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 18);
+  }
+  if (!vtTex) {
+    vtTex = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 12);
+  }
+  if (!vtOpacity) {
+    vtOpacity = new Float32Array(MAX_TEXTURE_IMAGE_UNITS * 6);
+  }
+  if (!vtTexIndex) {
+    vtTexIndex = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS * 6);
+  }
+  if (!uArray) {
+    uArray = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS);
   }
   for (let i = 0; i < length; i++) {
     const {
@@ -369,22 +358,6 @@ function drawPrItem(
     vtTexIndex[i * 6 + 3] = i;
     vtTexIndex[i * 6 + 4] = i;
     vtTexIndex[i * 6 + 5] = i;
-    // vtClip[i * 16] = x1;
-    // vtClip[i * 16 + 1] = y1;
-    // vtClip[i * 16 + 2] = x2;
-    // vtClip[i * 16 + 3] = y2;
-    // vtClip[i * 16 + 4] = x1;
-    // vtClip[i * 16 + 5] = y1;
-    // vtClip[i * 16 + 6] = x2;
-    // vtClip[i * 16 + 7] = y2;
-    // vtClip[i * 16 + 8] = x1;
-    // vtClip[i * 16 + 9] = y1;
-    // vtClip[i * 16 + 10] = x2;
-    // vtClip[i * 16 + 11] = y2;
-    // vtClip[i * 16 + 12] = x1;
-    // vtClip[i * 16 + 13] = y1;
-    // vtClip[i * 16 + 14] = x2;
-    // vtClip[i * 16 + 15] = y2;
   }
   // 顶点buffer
   const pointBuffer = gl.createBuffer();
@@ -414,13 +387,6 @@ function drawPrItem(
   const a_textureIndex = cacheProgram.attrib.a_textureIndex;
   gl.vertexAttribPointer(a_textureIndex, 1, gl.UNSIGNED_SHORT, false, 0, 0);
   gl.enableVertexAttribArray(a_textureIndex);
-  // clip
-  // const clipBuffer = gl.createBuffer();
-  // gl.bindBuffer(gl.ARRAY_BUFFER, clipBuffer);
-  // gl.bufferData(gl.ARRAY_BUFFER, vtClip, gl.STATIC_DRAW);
-  // const a_clip = cacheProgram.attrib.a_clip;
-  // gl.vertexAttribPointer(a_clip, 4, gl.FLOAT, false, 0, 0);
-  // gl.enableVertexAttribArray(a_clip);
   // 纹理
   const uniformValue = cacheProgram.uniformValue;
   uArray.forEach(item => {
@@ -447,6 +413,7 @@ export function drawPr(
   if (!length) {
     return;
   }
+  const MAX_TEXTURE_IMAGE_UNITS = config.MAX_TEXTURE_IMAGE_UNITS;
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
   // 每16个分为一组，进行图元重启一次DrawCall
