@@ -1,8 +1,8 @@
 # krolis([ˈkroʊlɪs])
 
-A high-performance WebGL/WebGPU engine, that unifies hardware-accelerated rich text layout, multi-track video decoding, and high-speed encoding.
+A high-performance WebGL/WebGPU engine: layout, animation, vectors, and media.
 
-一个高性能的WebGL/WebGPU引擎，集成了硬件加速的富文本布局、多轨视频解码和高速编码功能。
+一个高性能的WebGL/WebGPU渲染引擎：布局、动画、矢量、多媒体。
 
 _Derived from Kronos (Titan of Time) + Belisama (Goddess of Fire & Craft)._
 
