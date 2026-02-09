@@ -1,16 +1,17 @@
-import Node from '../node/Node';
-import Container from '../node/Container';
-import Bitmap from '../node/Bitmap';
-import Text from '../node/Text';
-import Video from '../node/Video';
-import Audio from '../node/Audio';
-import Root from '../node/Root';
-// import Lottie from '../node/Lottie';
-import nodePkg from '../node';
-import Polyline from '../node/geom/Polyline';
+import { Node } from '../node/node';
+import { Container } from '../node/container';
+import { Bitmap } from '../node/bitmap';
+import { Text } from '../node/text';
+import { Video } from '../node/video';
+import { Audio } from '../node/audio';
+import { Root } from '../node/root';
+import { getLottie } from '../node';
+import { Polyline } from '../node/geom/polyline';
 import { Item, ItemRoot, ParserOptions } from './define';
-import AbstractNode, { NodeType } from '../node/AbstractNode';
-import Component from '../node/Component';
+import { AbstractNode, NodeType } from '../node/abstract-node';
+import { Component } from '../node/component';
+
+export * from './define';
 
 export function parseJSON(json: Item | AbstractNode) {
   if (json instanceof AbstractNode) {
@@ -50,7 +51,8 @@ export function parseJSON(json: Item | AbstractNode) {
     node = new Audio(props);
   }
   else if (tagName === 'lottie') {
-    node = new nodePkg.Lottie(props);
+    const Lottie = getLottie();
+    node = new Lottie(props);
   }
   else if (tagName === 'polyline') {
     node = new Polyline(props);
@@ -108,9 +110,3 @@ export function parse(json: Item | ItemRoot, options?: ParserOptions) {
     return parseJSON(json);
   }
 }
-
-export default {
-  parseJSON,
-  parseRoot,
-  parse,
-};

@@ -1,4 +1,4 @@
-import AbstractDecoder from './AbstractDecoder';
+import { AbstractDecoder } from './abstract-decoder';
 
 export enum DecoderMessageType {
   META = 0,
@@ -131,13 +131,4 @@ export type EncodeOptions = {
   duration?: number;
   video?: Partial<VideoEncoderConfig>,
   audio?: Partial<AudioEncoderConfig>,
-};
-
-export default {
-  DecoderMessageType,
-  DecoderMessageEvent,
-  EncoderMessageType,
-  EncoderMessageEvent,
-  GOPState,
-  CacheState,
 };

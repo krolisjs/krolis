@@ -170,11 +170,3 @@ export function convertS16ToFloat32(
 
   return targetFloat32;
 }
-
-export default {
-  stereo2Mono,
-  extractAudioBuffer,
-  reSample,
-  sliceAudioBuffer,
-  convertS16ToFloat32,
-};

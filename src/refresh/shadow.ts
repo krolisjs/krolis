@@ -1,9 +1,9 @@
-import Root from '../node/Root';
-import Node from '../node/Node';
-import TextureCache from './TextureCache';
+import { Root } from '../node/root';
+import { Node } from '../node/node';
+import { TextureCache } from './texture-cache';
 import { createTexture, drawDropShadow, drawTextureCache } from '../gl/webgl';
 import { genFrameBufferWithTexture, releaseFrameBuffer } from './fb';
-import CacheProgram from '../gl/CacheProgram';
+import { CacheProgram } from '../gl/cache-program';
 import { genGaussBlur } from './blur';
 import { checkInRect } from './check';
 import config from '../config';

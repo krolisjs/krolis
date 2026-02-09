@@ -21,6 +21,7 @@ export default [
         format: 'iife',
         sourcemap: true,
         name: 'krolis',
+        exports: 'named',
       },
     ],
     plugins: [
@@ -48,6 +49,7 @@ export default [
         file: 'dist/decoder.iife.js',
         format: 'iife',
         name: 'decoder',
+        exports: 'named',
         sourcemap: true,
       },
     ],
@@ -74,6 +76,7 @@ export default [
         file: 'dist/encoder.iife.js',
         format: 'iife',
         name: 'encoder',
+        exports: 'named',
         sourcemap: true,
       },
     ],
@@ -101,7 +104,7 @@ export default [
   },
   // 归并 .d.ts 文件
   {
-    input: 'types/index.d.ts',
+    input: 'src/index.ts',
     output: {
       file: 'dist/index.d.ts',
       format: 'es',
@@ -110,5 +113,9 @@ export default [
       // 将类型文件全部集中到一个文件中
       dts(),
     ],
+    watch: {
+      include: 'src/**',
+      clearScreen: false
+    },
   },
 ];

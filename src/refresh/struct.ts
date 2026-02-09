@@ -1,11 +1,11 @@
-import Node from '../node/Node';
-import Root from '../node/Root';
+import { Node } from '../node/node';
+import { Root } from '../node/root';
 import { genMerge, shouldIgnore } from './merge';
 import { checkInScreen } from './check';
 import { assignMatrix, multiply } from '../math/matrix';
-import Container from '../node/Container';
+import { Container } from '../node/container';
 import { DrawData, drawTextureCache, drawPr } from '../gl/webgl';
-import CacheProgram from '../gl/CacheProgram';
+import { CacheProgram } from '../gl/cache-program';
 import { drawGpuTextureCache, GpuDrawData } from '../gpu/webgpu';
 
 export type Struct = {

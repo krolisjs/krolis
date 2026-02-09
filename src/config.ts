@@ -78,4 +78,12 @@ export default {
   encoderFrameQue: 0, // 渲染传给合成时帧队列缓存多少，0为一帧一帧渲染等待合成，负数为无穷大，建议4低内存高并发
   webgl2: true, // 是否尝试使用webgl2
   webgpu: false, // 是否尝试使用webgpu
+  webglContextAttribute: {
+    alpha: true,
+    antialias: true,
+    premultipliedAlpha: true,
+    preserveDrawingBuffer: true, // 刚渲染完可以截图，后续不可，如需则设true
+    depth: true,
+    stencil: true,
+  },
 };

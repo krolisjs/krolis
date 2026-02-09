@@ -160,14 +160,3 @@ export function calTransform(computedStyle: Partial<Pick<ComputedStyle, 'transla
   }
   return transform;
 }
-
-export default {
-  calRotateX,
-  calRotateXRadian,
-  calRotateZ,
-  calRotateZRadian,
-  calMatrixByOrigin,
-  calTransform,
-  calTransformByMatrixAndOrigin,
-  calPerspectiveMatrix,
-};

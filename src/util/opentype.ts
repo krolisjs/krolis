@@ -1,5 +1,5 @@
 // @ts-nocheck
-import inject from './inject';
+import inject from '../inject';
 
 const inflate = (function () {
   let TINF_OK = 0;
@@ -1197,7 +1197,7 @@ function parseLtagTable(data, start) {
   return tags;
 }
 
-export default {
+export const opentype = {
   parse(arrayBuffer) {
     let data = new DataView(arrayBuffer, 0);
     let signature = getTag(data, 0);

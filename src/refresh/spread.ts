@@ -1,13 +1,13 @@
-import TextureCache from './TextureCache';
+import { TextureCache } from './texture-cache';
 import config from '../config';
 import { createTexture, drawTextureCache } from '../gl/webgl';
-import CacheProgram from '../gl/CacheProgram';
+import { CacheProgram } from '../gl/cache-program';
 import { genFrameBufferWithTexture } from './fb';
 import { checkInRect } from './check';
-import { NodeType } from '../node/AbstractNode';
-import Video from '../node/Video';
-import Node from '../node/Node';
-import Bitmap from '../node/Bitmap';
+import { NodeType } from '../node/abstract-node';
+import { Video } from '../node/video';
+import { Node } from '../node/node';
+import { Bitmap } from '../node/bitmap';
 
 export function createInOverlay(
   gl: WebGLRenderingContext | WebGL2RenderingContext,

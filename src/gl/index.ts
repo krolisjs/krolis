@@ -1,5 +1,1 @@
-import ca from './ca';
-
-export default {
-  ca,
-};
+export * as webgl from './webgl';

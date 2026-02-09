@@ -177,7 +177,7 @@ export function normalizeEasing(ea: string | number[] | ((v: number) => number))
   }
 }
 
-const easing = {
+export const easing = {
   linear: bezier(1, 1, 0, 0),
   easeIn: bezier(0.42, 0, 1, 1),
   easeOut: bezier(0, 0, 0.58, 1),
@@ -186,5 +186,3 @@ const easing = {
   cubicBezier: bezier,
   normalizeEasing,
 };
-
-export default easing;

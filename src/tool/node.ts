@@ -1,7 +1,13 @@
-import AbstractNode from '../node/AbstractNode';
+import { AbstractNode } from '../node/abstract-node';
 import { ComputedStyle, StyleUnit } from '../style/define';
 import { ResizeStyle } from '../format';
-import { Rect } from '../interaction/Select';
+
+export type Rect = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
 
 // 多个节点的BoundingClientRect合集极值
 export function getWholeBoundingClientRect(

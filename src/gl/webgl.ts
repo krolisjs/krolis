@@ -1,6 +1,6 @@
 import { calRectPoints } from '../math/matrix';
-import inject from '../util/inject';
-import CacheProgram from './CacheProgram';
+import { CacheProgram } from './cache-program';
+import inject from '../inject';
 import config from '../config';
 
 export function initShaders(

@@ -1,6 +1,6 @@
-import { Options } from '../animation/AbstractAnimation';
-import { JKeyFrame } from '../animation/CssAnimation';
-import { JKeyFrameRich } from '../animation/RichAnimation';
+import { Options } from '../animation/abstract-animation';
+import { JKeyFrame } from '../animation/css-animation';
+import { JKeyFrameRich } from '../animation/rich-animation';
 import {
   AudioProps,
   BitmapProps, ComponentProps,
@@ -11,7 +11,7 @@ import {
   TextProps,
   VideoProps
 } from '../format';
-import AbstractNode from '../node/AbstractNode';
+import { AbstractNode } from '../node/abstract-node';
 
 export type JCssAnimations = {
   keyframes: JKeyFrame[];

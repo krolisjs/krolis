@@ -162,17 +162,3 @@ export function motionSize(sigma: number, angle: number) {
   const y = Math.abs(Math.ceil(cos * spread));
   return { x, y };
 }
-
-export default {
-  gaussKernel,
-  gaussSize,
-  gaussSizeByD,
-  gaussianWeight,
-  radialSize,
-  motionSize,
-  boxesForGauss,
-  dualKawase,
-  n2Kernel,
-  n2Size,
-  n2Weight,
-};

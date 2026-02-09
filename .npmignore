@@ -25,3 +25,4 @@ tsconfig.json
 types/
 .mocharc.json
 .krolis.svg
+.rollup.cache

@@ -599,31 +599,3 @@ export function calRectPoints(
 
 // perspectiveMatrix占位符，由于较少用到，用它代替空
 export const EMPTY_MATRIX = identity();
-
-export default {
-  identity,
-  isE,
-  toE,
-  assignMatrix,
-  inverse,
-  inverse4,
-  calPoint,
-  calRectPoints,
-  tfoMultiply,
-  multiplyTfo,
-  multiply,
-  multiplyRef,
-  multiplyTranslate,
-  multiplyTranslateX,
-  multiplyTranslateY,
-  multiplyTranslateZ,
-  multiplyRotateX,
-  multiplyRotateY,
-  multiplyRotateZ,
-  multiplySkewX,
-  multiplySkewY,
-  multiplyScale,
-  multiplyScaleX,
-  multiplyScaleY,
-  EMPTY_MATRIX,
-};

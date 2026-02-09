@@ -2,9 +2,9 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "declarationDir": "types",
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
     "removeComments": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

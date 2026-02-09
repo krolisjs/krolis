@@ -1,9 +1,9 @@
-import AbstractNode, { NodeType } from '../node/AbstractNode';
-import Root from '../node/Root';
-import Container from '../node/Container';
+import { AbstractNode, NodeType } from '../node/abstract-node';
+import { Root } from '../node/root';
+import { Container } from '../node/container';
 import { pointInRect } from '../math/geom';
 import { Mask, Visibility } from '../style/define';
-import Component from '../node/Component';
+import { Component } from '../node/component';
 
 function getChildByPoint(parent: Container, x: number, y: number, recursionComponent = false): AbstractNode | undefined {
   const children = parent.children;

@@ -1,11 +1,11 @@
-import vector from './vector';
+import { unitize3, crossProduct3, dotProduct3, isParallel3, length3 } from './vector';
 import {
   bboxBezier,
   bezierExtremaT,
   getBezierMonotonicityT2,
   getPointByT,
   getT,
-  sliceBezier
+  sliceBezier,
 } from './bezier';
 
 type Point3 = {
@@ -13,8 +13,6 @@ type Point3 = {
   y: number,
   z: number,
 };
-
-const { unitize3, crossProduct3, dotProduct3, isParallel3, length3 } = vector;
 
 function bboxMonotonous(p: { x: number, y: number }[]) {
   const a = p[0], b = p[p.length - 1];
@@ -1297,16 +1295,4 @@ function pointOnLine3(p: Point3, p1: Point3, p2: Point3, eps = 1e-9) {
   const v2x = p2.x - p.x, v2y = p2.y - p.y, v2z = p2.z - p.z;
   const c = crossProduct3(v1x, v1y, v1z, v2x, v2y, v2z);
   return length3(c.x, c.y, c.z) < eps;
-}
-
-export default {
-  intersectLineLine,
-  intersectBezier2Line, // 二阶贝塞尔曲线 与 直线
-  intersectBezier3Line, // 三阶贝塞尔曲线 与 直线
-  intersectBezier2Bezier2, // 二阶贝塞尔曲线 与 二阶贝塞尔曲线
-  intersectBezier3Bezier3, // 三阶贝塞尔曲线 与 三阶贝塞尔曲线
-  intersectBezier2Bezier3, // 二阶贝塞尔曲线 与 三阶贝塞尔曲线
-  intersectLineLine3,
-  intersectPlanePlane,
-  pointOnLine3,
 }

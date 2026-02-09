@@ -1,29 +1,26 @@
-import AbstractNode, { NodeType } from './AbstractNode';
-import Component, { PLACEHOLDER_NODE } from './Component';
-import Container from './Container';
-import Bitmap from './Bitmap';
-import Node from './Node';
-import Root from './Root';
-import Video from './Video';
-import Audio from './Audio';
-import Text from './Text';
-import Lottie from './Lottie';
-import Polyline from './geom/Polyline';
-import textEvent from './textEvent';
+import { Lottie, LottieConstructor } from './lottie';
 
-export default {
-  AbstractNode,
-  Component,
-  Container,
-  Bitmap,
-  Node,
-  Root,
-  Video,
-  Audio,
-  Text,
-  Lottie,
-  Polyline,
-  PLACEHOLDER_NODE,
-  NodeType,
-  textEvent,
-};
+export * as abstractNode from './abstract-node';
+export * as audio from './audio';
+export * as bitmap from './bitmap';
+export * as component from './component';
+export * as container from './container';
+export * as geom from './geom';
+export * as lineBox from './line-box';
+export * as lottie from './lottie';
+export * as node from './node';
+export * as root from './root';
+export * as text from './text';
+export * as textBox from './text-box';
+export * as textEvent from './text-event';
+export * as video from './video';
+
+let defaultLottie: LottieConstructor = Lottie;
+
+export function getLottie() {
+  return defaultLottie;
+}
+
+export function setLottie(v: LottieConstructor) {
+  defaultLottie = v;
+}

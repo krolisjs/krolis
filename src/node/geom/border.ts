@@ -237,8 +237,3 @@ export function lineJoin(bbox: Float32Array, width: number, points: number[][], 
   }
   return res;
 }
-
-export default {
-  lineCap,
-  lineJoin,
-};

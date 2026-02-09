@@ -1,4 +1,4 @@
-import inject from '../util/inject';
+import inject from '../inject';
 
 let isPause: boolean;
 
@@ -86,5 +86,3 @@ export class Frame {
 }
 
 export const frame = new Frame();
-
-export default frame;

@@ -1,5 +1,5 @@
 import { JPoint, JRich, JStyle, Point } from '../format';
-import inject from '../util/inject';
+import inject from '../inject';
 import { isNil, isString } from '../util/type';
 import {
   calUnit,
@@ -39,9 +39,9 @@ import {
   TextVerticalAlign,
   Visibility,
 } from './define';
-import reg from './reg';
+import * as reg from './reg';
 import { color2hexStr, color2rgbaInt, color2rgbaStr } from './color';
-import font from './font';
+import * as font from './font';
 import { convert2Css, isGradient, parseGradient } from './gradient';
 import config from '../config';
 
@@ -1332,17 +1332,3 @@ export function getPropsRich(rich: Rich) {
     strokeEnable: rich.strokeEnable.map(item => item.v),
   } as JRich;
 }
-
-export default {
-  normalize,
-  equalStyle,
-  cloneStyle,
-  cloneStyleItem,
-  calSize,
-  normalizeRich,
-  getCssMbm,
-  getCssFillStroke,
-  getCssStrokePosition,
-  normalizePoints,
-  getPropsRich,
-};

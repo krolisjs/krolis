@@ -1,17 +1,9 @@
-import font from './font';
-import transform from './transform';
-import define from './define';
-import css from './css';
-// import gradient from './gradient';
-import color from './color';
-// import compute from './compute';
-
-export default {
-  font,
-  transform,
-  define,
-  css,
-  // gradient,
-  color,
-  // compute,
-};
+export * as color from './color';
+export * as compute from './compute';
+export * as css from './css';
+export * from './define';
+export * as font from './font';
+export * as gradient from './gradient';
+export * as mbm from './mbm';
+export * as reg from './reg';
+export * as transform from './transform';

@@ -1,9 +1,9 @@
-import Root from '../node/Root';
-import Node from '../node/Node';
-import TextureCache from './TextureCache';
+import { Root } from '../node/root';
+import { Node } from '../node/node';
+import { TextureCache } from './texture-cache';
 import { drawInSpreadBbox, needReGen } from './spread';
 import { genFrameBufferWithTexture, releaseFrameBuffer } from './fb';
-import CacheProgram from '../gl/CacheProgram';
+import { CacheProgram } from '../gl/cache-program';
 import { createTexture, drawBloom, drawBloomBlur, drawDualDown13, drawDualUp13 } from '../gl/webgl';
 
 export function genBloom(

@@ -636,23 +636,3 @@ export enum CurveMode {
   ASYMMETRIC = 3,
   DISCONNECTED = 4,
 }
-
-export default {
-  StyleUnit,
-  TextAlign,
-  TextVerticalAlign,
-  MixBlendMode,
-  FontStyle,
-  GradientType,
-  FillRule,
-  Mask,
-  StrokeLineCap,
-  StrokeLineJoin,
-  StrokePosition,
-  PatternFillType,
-  Visibility,
-  TextDecoration,
-  Overflow,
-  calUnit,
-  RICH_KEYS,
-};

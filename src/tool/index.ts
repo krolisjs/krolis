@@ -1,7 +1,3 @@
-import root from '../node/Root';
-import container from '../node/Container';
-
-export default {
-  root,
-  container,
-};
+export * as container from './container';
+export * as node from './node';
+export * as root from './root';

@@ -1,10 +1,16 @@
-import AbstractNode from '../node/AbstractNode';
-import { RemoveData } from '../history/RemoveCommand';
+import { AbstractNode } from '../node/abstract-node';
 import { clone } from '../util/type';
 import { StyleUnit } from '../style/define';
-import Container from '../node/Container';
+import { Container } from '../node/container';
 
-export function appendWithPosAndSize(node: AbstractNode, data: RemoveData) {
+type LocateData = {
+  x: number; // 位置即computedStyle的left/top，但删除节点会使得parent组的尺寸变化，left/top会不准确，记录时需修正
+  y: number;
+  parent: Container; // undo时添加需要父元素
+  index: number; // 移除时在第几个child
+};
+
+export function appendWithPosAndSize(node: AbstractNode, data: LocateData) {
   const { style, computedStyle } = node;
   const { x, y, parent, index } = data;
   // 原始单位记录下来
@@ -163,8 +169,3 @@ export function appendWithIndex(parent: Container, node: AbstractNode, index: nu
     children[index].insertAfter(node);
   }
 }
-
-export default {
-  appendWithPosAndSize,
-  appendWithIndex,
-};

@@ -132,11 +132,3 @@ export function clampColor(c: number[]) {
   }
   return [r, g, b];
 }
-
-export default {
-  color2rgbaInt,
-  color2rgbaStr,
-  color2hexStr,
-  color2gl,
-  clampColor,
-};

@@ -4,7 +4,7 @@ import { bezierLength, bezierSlope, getPointByT, getPointT } from '../../math/be
 import { getRoots } from '../../math/equation';
 import { crossProduct, unitize } from '../../math/vector';
 import { angleBySides, isRectsOverlap, pointsDistance } from '../../math/geom';
-import isec from '../../math/isec';
+import { intersectBezier2Bezier2 } from '../../math/isec';
 
 export type XY = {
   x: number;
@@ -155,7 +155,7 @@ export function getCurve(prevPoint: Point, point: Point, nextPoint: Point,
     { x: nextPoint.absX, y: nextPoint.absY },
   ];
   // 2曲线交点数，需排除顶点
-  const its = isec.intersectBezier2Bezier2(
+  const its = intersectBezier2Bezier2(
     prev[0].x, prev[0].y, prev[1].x, prev[1].y, prev[2].x, prev[2].y,
     next[0].x, next[0].y, next[1].x, next[1].y, next[2].x, next[2].y,
   ).filter(item => {
@@ -586,9 +586,3 @@ function convert2Seg(ps: XY[], belong: number) {
   }
   return res;
 }
-
-export default {
-  isCornerPoint,
-  getStraight,
-  getCurve,
-};

@@ -9,7 +9,7 @@ import {
 } from 'mediabunny';
 import { AudioChunk, EncoderMessageType, EncoderMessageEvent } from './codec/define';
 import { sleep } from './decoder';
-import inject from './util/inject';
+import inject from './inject';
 
 let videoEncoder: VideoEncoder | undefined;
 let audioEncoder: AudioEncoder | undefined;

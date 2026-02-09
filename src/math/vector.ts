@@ -150,22 +150,3 @@ export function angle3(x1: number, y1: number, z1: number, x2: number, y2: numbe
   }
   return Math.acos(cos);
 }
-
-export default {
-  dotProduct,
-  dotProduct3,
-  crossProduct,
-  crossProduct3,
-  projection,
-  includedAngle,
-  length,
-  length3,
-  unitize,
-  unitize3,
-  angle,
-  angle3,
-  isParallel,
-  isParallel3,
-  isZero,
-  isZero3,
-};

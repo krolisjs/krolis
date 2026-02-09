@@ -3,7 +3,7 @@ import { identity, multiplyRotateZ, multiplyScaleY } from '../math/matrix';
 import { clone } from '../util/type';
 import { color2rgbaInt, color2rgbaStr } from './color';
 import { calUnit, ColorStop, ComputedColorStop, Gradient, GradientType, StyleNum, StyleUnit } from './define';
-import reg from './reg';
+import * as reg from './reg';
 import { calMatrixByOrigin } from './transform';
 import { toPrecision } from '../math';
 
@@ -804,14 +804,3 @@ export function convert2Css(g: Gradient, width = 100, height = 100, standard = f
   }
   return '';
 }
-
-export default {
-  isGradient,
-  parseGradient,
-  getColorStop,
-  getLinear,
-  getRadial,
-  getConic,
-  convert2Css,
-  getLinearCoords,
-};

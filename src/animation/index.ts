@@ -1,19 +1,9 @@
-import frame from './frame';
-import CssAnimation from './CssAnimation';
-import AbstractAnimation from './AbstractAnimation';
-import GifAnimation from './GifAnimation';
-import TimeAnimation from './TimeAnimation';
-import RichAnimation from './RichAnimation';
-import AniController from './AniController';
-import animationEvent from './animationEvent';
-
-export default {
-  frame,
-  AbstractAnimation,
-  CssAnimation,
-  GifAnimation,
-  TimeAnimation,
-  RichAnimation,
-  AniController,
-  animationEvent,
-};
+export * as abstractAnimation from './abstract-animation';
+export * as aniController from './ani-controller';
+export * as animationEvent from './animation-event';
+export * as cssAnimation from './css-animation';
+export * as easing from './easing';
+export * as frame from './frame';
+export * as gifAnimation from './gif-animation';
+export * as richAnimation from './rich-animation';
+export * as timeAnimation from './time-animation';

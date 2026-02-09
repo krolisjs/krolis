@@ -1,31 +1,31 @@
-import AbstractDecoder, { DecoderConstructor } from './AbstractDecoder';
-import AbstractEncoder, { EncoderConstructor } from './AbstractEncoder';
-import MbVideoDecoder from './MbVideoDecoder';
-import MbVideoEncoder from './MbVideoEncoder';
-import decoderEvent from './decoderEvent';
-import encoderEvent from './encoderEvent';
+import { DecoderConstructor } from './abstract-decoder';
+import { EncoderConstructor } from './abstract-encoder';
+import { MbDecoder } from './mb-decoder';
+import { MbEncoder } from './mb-encoder';
 
-let defaultDecoder: DecoderConstructor = MbVideoDecoder;
+export * as abstractDecoder from './abstract-decoder';
+export * as abstractEncoder from './abstract-encoder';
+export * as mbDecoder from './mb-decoder';
+export * as mbEncoder from './mb-encoder';
+export * as decoderEvent from './decoder-event';
+export * as encoderEvent from './encoder-event';
 
-let defaultEncoder: EncoderConstructor = MbVideoEncoder;
+let defaultDecoder: DecoderConstructor = MbDecoder;
 
-export default {
-  AbstractDecoder,
-  AbstractEncoder,
-  MbVideoDecoder,
-  MbVideoEncoder,
-  decoderEvent,
-  encoderEvent,
-  getDecoder() {
-    return defaultDecoder;
-  },
-  setDecoder(v: DecoderConstructor) {
-    defaultDecoder = v;
-  },
-  getEncoder() {
-    return defaultEncoder;
-  },
-  setEncoder(v: EncoderConstructor) {
-    defaultEncoder = v;
-  },
-};
+let defaultEncoder: EncoderConstructor = MbEncoder;
+
+export function getDecoder() {
+  return defaultDecoder;
+}
+
+export function getEncoder() {
+  return defaultEncoder;
+}
+
+export function setDecoder(v: DecoderConstructor) {
+  defaultDecoder = v;
+}
+
+export function setEncoder(v: EncoderConstructor) {
+  defaultEncoder = v;
+}

@@ -84,9 +84,3 @@ export function calComputedFilter(filter: Style['filter'], w: number, h: number)
     }
   }) as ComputedFilter[];
 }
-
-export default {
-  calComputedFill,
-  calComputedStroke,
-  calComputedFilter,
-};

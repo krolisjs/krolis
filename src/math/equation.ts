@@ -239,10 +239,3 @@ export function lineSlope(x1: number, y1: number, x2: number, y2: number) {
   }
   return (y2 - y1) / (x2 - x1);
 }
-
-export default {
-  getRoots,
-  twoPoint2General,
-  pointSlope2General,
-  lineSlope,
-};

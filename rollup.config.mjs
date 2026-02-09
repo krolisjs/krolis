@@ -34,12 +34,14 @@ export default [
         format: 'iife',
         sourcemap: true,
         name: 'krolis',
+        exports: 'named',
       },
       {
         file: 'dist/index.iife.min.js',
         format: 'iife',
         sourcemap: true,
         name: 'krolis',
+        exports: 'named',
         plugins: [
           terser(),
         ],
@@ -70,12 +72,14 @@ export default [
         file: 'dist/decoder.iife.js',
         format: 'iife',
         name: 'decoder',
+        exports: 'named',
         sourcemap: true,
       },
       {
         file: 'dist/decoder.iife.min.js',
         format: 'iife',
         name: 'decoder',
+        exports: 'named',
         sourcemap: true,
         plugins: [
           terser(),
@@ -105,12 +109,14 @@ export default [
         file: 'dist/encoder.iife.js',
         format: 'iife',
         name: 'encoder',
+        exports: 'named',
         sourcemap: true,
       },
       {
         file: 'dist/encoder.iife.min.js',
         format: 'iife',
         name: 'encoder',
+        exports: 'named',
         sourcemap: true,
         plugins: [
           terser(),
@@ -154,7 +160,7 @@ export default [
   },
   // 归并 .d.ts 文件
   {
-    input: 'types/index.d.ts',
+    input: 'src/index.ts',
     output: {
       file: 'dist/index.d.ts',
       format: 'es',

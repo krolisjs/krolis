@@ -1,11 +1,11 @@
 import { ComputedStyle, Mask, MixBlendMode, Overflow, StyleUnit, Visibility } from '../style/define';
-import Node from '../node/Node';
-import Root from '../node/Root';
+import { Node } from '../node/node';
+import { Root } from '../node/root';
 import { RefreshLevel } from './level';
 import { assignMatrix, inverse, isE, multiply, toE } from '../math/matrix';
 import { Struct } from './struct';
 import { ceilBbox, mergeBbox } from '../math/bbox';
-import TextureCache, { SubTexture } from './TextureCache';
+import { TextureCache, SubTexture } from './texture-cache';
 import config from '../config';
 import {
   createTexture,
@@ -14,15 +14,15 @@ import {
   drawTextureCache,
   // texture2Blob,
 } from '../gl/webgl';
-import inject from '../util/inject';
+import inject from '../inject';
 import { genGaussBlur, genMotionBlur, genRadialBlur } from './blur';
 import { genFrameBufferWithTexture, releaseFrameBuffer } from './fb';
 import { checkInRect } from './check';
-import CacheProgram from '../gl/CacheProgram';
+import { CacheProgram } from '../gl/cache-program';
 import { calMatrixByOrigin, calPerspectiveMatrix } from '../style/transform';
 import { genBloom } from './bloom';
 import { needReGen } from './spread';
-import { genLightDark } from './lightDark';
+import { genLightDark } from './light-dark';
 import { genColorMatrix } from './cm';
 import { genShadow } from './shadow';
 
@@ -1106,25 +1106,3 @@ function setValid(merge: Merge) {
     }
   }
 }
-
-export default {
-  genTotal,
-  genFilter,
-  genMask(node: Node) {
-    const { root, computedStyle, struct } = node;
-    if (root && struct) {
-      genMask(
-        root.ctx as WebGLRenderingContext | WebGL2RenderingContext,
-        root,
-        node,
-        computedStyle.maskMode,
-        root.structs,
-        root.structs.indexOf(struct),
-        struct.lv,
-        struct.total,
-        root.width,
-        root.height
-      );
-    }
-  },
-};

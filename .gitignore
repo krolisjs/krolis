@@ -10,3 +10,4 @@ coverage/
 /index.*
 dist/
 types/
+.rollup.cache

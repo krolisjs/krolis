@@ -1026,23 +1026,3 @@ export function getT(points: { x: number, y: number }[], v: number, isX = true) 
   ]);
   return t.filter(i => i >= 0 && i <= 1);
 }
-
-export default {
-  bboxBezier,
-  bezierLength,
-  bezierAt,
-  sliceBezier,
-  getPointByT,
-  getT,
-  getPointT,
-  getPointWithDByApprox,
-  bezierSlope,
-  bezierExtremaT,
-  bezierTangent,
-  splitBezierT,
-  getBezierMonotonicityT,
-  getBezierMonotonicityT2,
-  bezierDerivative,
-  bezierDerivative2,
-  bezierValue,
-};

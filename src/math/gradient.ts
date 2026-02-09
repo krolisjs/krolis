@@ -1,4 +1,4 @@
-import inject from '../util/inject';
+import inject from '../inject';
 
 export function genConicGradientImageData(
   originX: number,
@@ -117,8 +117,3 @@ export function drawConicGradient(
   offscreen.ctx.putImageData(imageData, 0, 0);
   return offscreen;
 }
-
-export default {
-  genConicGradientImageData,
-  drawConicGradient,
-};

@@ -133,10 +133,3 @@ export function getLevel(k: string) {
   }
   return RefreshLevel.REPAINT;
 }
-
-export default {
-  RefreshLevel,
-  isRepaint,
-  isReflow,
-  isReflowKey,
-};

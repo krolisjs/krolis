@@ -1,9 +1,9 @@
 import { expect } from 'expect';
-import krono from '../dist/index.js';
+import { parser } from '../dist/index.js';
 
 describe('Layout', () => {
   it('Flow static block by block', () => {
-    const root = krono.parser.parseRoot({
+    const root = parser.parseRoot({
       tagName: 'root',
       props: {
         style: {
@@ -47,7 +47,7 @@ describe('Layout', () => {
   });
 
   it('Flow absolute', () => {
-    const root = krono.parser.parseRoot({
+    const root = parser.parseRoot({
       tagName: 'root',
       props: {
         style: {

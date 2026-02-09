@@ -1,5 +1,5 @@
-import opentype from '../util/opentype';
-import inject from '../util/inject';
+import { opentype } from '../util/opentype';
+import inject from '../inject';
 
 const Arial: FontData = {
   name: 'Arial',
@@ -17,8 +17,8 @@ const Arial: FontData = {
   ],
 };
 
-const KEY_INFO = 'localFonts'; // 解析过的存本地缓存，解析时间还是有些成本
-const VERSION = 2;
+export const KEY_INFO = 'localFonts'; // 解析过的存本地缓存，解析时间还是有些成本
+export const VERSION = 2;
 const isWin = typeof navigator !== 'undefined' && /win/i.test(navigator.platform);
 
 export type FontData = {
@@ -35,208 +35,209 @@ export type FontData = {
 };
 
 // family为key的信息，同一系列共享
-const info: Record<string, FontData> = { Arial };
+export const info: Record<string, FontData> = { Arial };
 // postscriptName/family为key，和info同引用，方便使用
-const data: Record<string, FontData> = { Arial };
+export const data: Record<string, FontData> = { Arial };
 // 尚未注册的等注册后的回调，一般是Text使用未知字体布局后，又被注册重新布局
-const wait: Record<string, (() => void)[]> = {};
+export const wait: Record<string, (() => void)[]> = {};
 
-const o = {
-  KEY_INFO,
-  info,
-  data,
-  hasRegister(fontFamily: string) {
-    return data.hasOwnProperty(fontFamily);
-  },
-  async registerLocalFonts(fonts?: any[]) {
-    if (!fonts) {
-      fonts = await inject.loadLocalFonts() || [];
+export function hasRegister(fontFamily: string) {
+  return data.hasOwnProperty(fontFamily);
+}
+
+function cal(family: string, f: { ascent: number, descent: number, lineGap: number, emSquare: number }) {
+  let spread = 0;
+  // Times, Helvetica, Courier，3个特殊字体偏移，逻辑来自webkit历史
+  // 查看字体发现非推荐标准，先统一取osx的hhea字段，然后ascent做整体15%放大
+  // https://github.com/WebKit/WebKit/blob/main/Source/WebCore/platform/graphics/coretext/FontCoreText.cpp#L182
+  if (['times', 'helvetica', 'courier'].indexOf(family.toLowerCase()) > -1) {
+    spread = Math.round((f.ascent + f.descent) * 0.15);
+  }
+  const lhr = (f.ascent + spread + f.descent + f.lineGap) / f.emSquare;
+  const car = (f.ascent + spread + f.descent) / f.emSquare;
+  const blr = (f.ascent + spread) / f.emSquare;
+  const lgr = f.lineGap / f.emSquare;
+  return {
+    lhr,
+    car,
+    blr,
+    lgr,
+  };
+}
+
+function register(
+  family: string,
+  style: string,
+  postscriptName: string,
+) {
+  const o = info[family];
+  const list = o.list = (o.list || []);
+  let has = false;
+  for (let i = 0, len = list.length; i < len; i++) {
+    const item = list[i];
+    if (item.postscriptName === postscriptName) {
+      has = true;
+      break;
     }
-    let cacheInfo: any = {};
-    if (typeof localStorage !== 'undefined') {
-      try {
-        cacheInfo = JSON.parse(localStorage.getItem(KEY_INFO) || '{}');
-      } catch(e) {
-      }
+  }
+  if (!has) {
+    list.push({
+      style,
+      postscriptName,
+    });
+  }
+  return {
+    family: family,
+    postscriptName: postscriptName,
+    data: (data[family] = data[postscriptName] = o),
+  }; // 同个字体族不同postscriptName指向一个引用
+}
+
+export async function registerLocalFonts(fonts?: any[]) {
+  if (!fonts) {
+    fonts = await inject.loadLocalFonts() || [];
+  }
+  let cacheInfo: any = {};
+  if (typeof localStorage !== 'undefined') {
+    try {
+      cacheInfo = JSON.parse(localStorage.getItem(KEY_INFO) || '{}');
+    } catch(e) {
     }
-    let cache: any = cacheInfo.data || {};
-    if (!cacheInfo.version || cacheInfo.version < VERSION) {
-      cache = {};
+  }
+  let cache: any = cacheInfo.data || {};
+  if (!cacheInfo.version || cacheInfo.version < VERSION) {
+    cache = {};
+  }
+  for (let i = 0, len = fonts!.length; i < len; i++) {
+    const font = fonts![i];
+    const postscriptName = font.postscriptName;
+    const family = font.family;
+    const style = font.style;
+    if (isWin) {
+      await inject.addLocalFont(postscriptName); // windows上需要注册
     }
-    for (let i = 0, len = fonts!.length; i < len; i++) {
-      const font = fonts![i];
-      const postscriptName = font.postscriptName;
-      const family = font.family;
-      const style = font.style;
-      if (isWin) {
-        await inject.addLocalFont(postscriptName); // windows上需要注册
-      }
-      // localStorage存的是this.info
-      if (cache.hasOwnProperty(family)) {
-        const o: any = cache[family];
-        info[family] = info[family] || {
-          name: o.name,
-          family: family, // 保持大小写
-          lhr: o.lhr,
-          car: o.car,
-          blr: o.blr,
-          lgr: o.lgr,
-          list: [],
-        };
-      }
-      // 没有cache则用opentype读取
-      if (!info.hasOwnProperty(family)) {
-        const o = info[family] = {
-          name: '',
-          family: '',
-          lhr: 0,
-          car: 0,
-          blr: 0,
-          lgr: 0,
-          list: [],
-        };
-        const blob = await font.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        const f: any = opentype.parse(arrayBuffer);
-        if (f && f.name) {
-          o.name =
-            f.name.preferredFamily?.zh ||
-            f.name.preferredFamily?.en ||
-            f.name.fontFamily?.zh;
-        }
-        o.name = o.name || family; // 中文名字
-        o.family = family;
-        const r = this._cal(family, f);
-        Object.assign(o, r);
-      }
-      this._register(family, style, postscriptName);
-      checkWait(family);
-      if (postscriptName !== family) {
-        checkWait(postscriptName);
-      }
+    // localStorage存的是this.info
+    if (cache.hasOwnProperty(family)) {
+      const o: any = cache[family];
+      info[family] = info[family] || {
+        name: o.name,
+        family: family, // 保持大小写
+        lhr: o.lhr,
+        car: o.car,
+        blr: o.blr,
+        lgr: o.lgr,
+        list: [],
+      };
     }
-    this.updateLocalStorage();
-  },
-  async registerAb(ab: ArrayBuffer, customFamily?: string) {
-    if (customFamily && data.hasOwnProperty(customFamily)) {
-      return;
-    }
-    const o: any = {};
-    const f: any = opentype.parse(ab);
-    if (f && f.name) {
-      o.family = f.name.preferredFamily?.en || f.name.fontFamily?.en;
-      o.name =
-        f.name.preferredFamily?.zh ||
-        f.name.preferredFamily?.en ||
-        f.name.fontFamily?.zh ||
-        o.family;
-    }
-    // 没有信息无效
-    const family = o.family;
-    const style = f.name.preferredSubfamily?.en || f.name.fontSubfamily?.en;
-    const postscriptName = f.name.postScriptName?.en;
-    if (!family || !style || !postscriptName) {
-      return;
-    }
-    await inject.addArrayBufferFont(family, ab);
-    if (postscriptName !== family) {
-      await inject.addArrayBufferFont(postscriptName, ab);
-    }
-    if (customFamily && customFamily !== family && customFamily !== postscriptName) {
-      await inject.addArrayBufferFont(customFamily, ab);
-    }
+    // 没有cache则用opentype读取
     if (!info.hasOwnProperty(family)) {
-      const r = this._cal(family, f);
+      const o = info[family] = {
+        name: '',
+        family: '',
+        lhr: 0,
+        car: 0,
+        blr: 0,
+        lgr: 0,
+        list: [],
+      };
+      const blob = await font.blob();
+      const arrayBuffer = await blob.arrayBuffer();
+      const f: any = opentype.parse(arrayBuffer);
+      if (f && f.name) {
+        o.name =
+          f.name.preferredFamily?.zh ||
+          f.name.preferredFamily?.en ||
+          f.name.fontFamily?.zh;
+      }
+      o.name = o.name || family; // 中文名字
+      o.family = family;
+      const r = cal(family, f);
       Object.assign(o, r);
-      o.list = [];
-      info[family] = data[family] = o;
     }
-    this._register(family, style, postscriptName);
-    if (customFamily && customFamily !== family && customFamily !== postscriptName) {
-      info[customFamily] = data[customFamily] = data[family];
-    }
+    register(family, style, postscriptName);
     checkWait(family);
     if (postscriptName !== family) {
       checkWait(postscriptName);
     }
-    if (customFamily && customFamily !== family && customFamily !== postscriptName) {
-      checkWait(customFamily);
-    }
-    return data[family];
-  },
-  _cal(family: string, f: { ascent: number, descent: number, lineGap: number, emSquare: number }) {
-    let spread = 0;
-    // Times, Helvetica, Courier，3个特殊字体偏移，逻辑来自webkit历史
-    // 查看字体发现非推荐标准，先统一取osx的hhea字段，然后ascent做整体15%放大
-    // https://github.com/WebKit/WebKit/blob/main/Source/WebCore/platform/graphics/coretext/FontCoreText.cpp#L182
-    if (['times', 'helvetica', 'courier'].indexOf(family.toLowerCase()) > -1) {
-      spread = Math.round((f.ascent + f.descent) * 0.15);
-    }
-    const lhr = (f.ascent + spread + f.descent + f.lineGap) / f.emSquare;
-    const car = (f.ascent + spread + f.descent) / f.emSquare;
-    const blr = (f.ascent + spread) / f.emSquare;
-    const lgr = f.lineGap / f.emSquare;
-    return {
-      lhr,
-      car,
-      blr,
-      lgr,
-    };
-  },
-  _register(
-    family: string,
-    style: string,
-    postscriptName: string,
-  ) {
-    const o = info[family];
-    const list = o.list = (o.list || []);
-    let has = false;
-    for (let i = 0, len = list.length; i < len; i++) {
-      const item = list[i];
-      if (item.postscriptName === postscriptName) {
-        has = true;
-        break;
-      }
-    }
-    if (!has) {
-      list.push({
-        style,
-        postscriptName,
-      });
-    }
-    return {
-      family: family,
-      postscriptName: postscriptName,
-      data: (data[family] = data[postscriptName] = o),
-    }; // 同个字体族不同postscriptName指向一个引用
-  },
-  waitIfNotRegister(family: string, handle: () => void) {
-    if (!data[family]) {
-      const o = wait[family] = wait[family] || [];
-      o.push(handle);
-    }
-  },
-  updateLocalStorage() {
-    const cache: any = {};
-    for (let i in info) {
-      if (info.hasOwnProperty(i)) {
-        const o = info[i];
-        cache[i] = {
-          name: o.name,
-          lhr: o.lhr,
-          car: o.car,
-          blr: o.blr,
-          lgr: o.lgr,
-        };
-      }
-    }
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(KEY_INFO, JSON.stringify({ version: VERSION, data: cache }));
-    }
-  },
-};
+  }
+  updateLocalStorage();
+}
 
-function checkWait(family: string) {
+export async function registerAb(ab: ArrayBuffer, customFamily?: string) {
+  if (customFamily && data.hasOwnProperty(customFamily)) {
+    return;
+  }
+  const o: any = {};
+  const f: any = opentype.parse(ab);
+  if (f && f.name) {
+    o.family = f.name.preferredFamily?.en || f.name.fontFamily?.en;
+    o.name =
+      f.name.preferredFamily?.zh ||
+      f.name.preferredFamily?.en ||
+      f.name.fontFamily?.zh ||
+      o.family;
+  }
+  // 没有信息无效
+  const family = o.family;
+  const style = f.name.preferredSubfamily?.en || f.name.fontSubfamily?.en;
+  const postscriptName = f.name.postScriptName?.en;
+  if (!family || !style || !postscriptName) {
+    return;
+  }
+  await inject.addArrayBufferFont(family, ab);
+  if (postscriptName !== family) {
+    await inject.addArrayBufferFont(postscriptName, ab);
+  }
+  if (customFamily && customFamily !== family && customFamily !== postscriptName) {
+    await inject.addArrayBufferFont(customFamily, ab);
+  }
+  if (!info.hasOwnProperty(family)) {
+    const r = cal(family, f);
+    Object.assign(o, r);
+    o.list = [];
+    info[family] = data[family] = o;
+  }
+  register(family, style, postscriptName);
+  if (customFamily && customFamily !== family && customFamily !== postscriptName) {
+    info[customFamily] = data[customFamily] = data[family];
+  }
+  checkWait(family);
+  if (postscriptName !== family) {
+    checkWait(postscriptName);
+  }
+  if (customFamily && customFamily !== family && customFamily !== postscriptName) {
+    checkWait(customFamily);
+  }
+  return data[family];
+}
+
+export function waitIfNotRegister(family: string, handle: () => void) {
+  if (!data[family]) {
+    const o = wait[family] = wait[family] || [];
+    o.push(handle);
+  }
+}
+
+function updateLocalStorage() {
+  const cache: any = {};
+  for (let i in info) {
+    if (info.hasOwnProperty(i)) {
+      const o = info[i];
+      cache[i] = {
+        name: o.name,
+        lhr: o.lhr,
+        car: o.car,
+        blr: o.blr,
+        lgr: o.lgr,
+      };
+    }
+  }
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(KEY_INFO, JSON.stringify({ version: VERSION, data: cache }));
+  }
+}
+
+export function checkWait(family: string) {
   if (wait.hasOwnProperty(family)) {
     wait[family].slice(0).forEach(item => {
       item();
@@ -244,5 +245,3 @@ function checkWait(family: string) {
     delete wait[family];
   }
 }
-
-export default o;

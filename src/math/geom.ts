@@ -345,21 +345,3 @@ export function isConvexPolygonInAnother(a: { x: number, y: number }[], b: { x: 
   }
   return true;
 }
-
-export default {
-  d2r,
-  r2d,
-  // 贝塞尔曲线模拟1/4圆弧比例
-  H,
-  // <90任意角度贝塞尔曲线拟合圆弧的比例公式
-  h,
-  pointInConvexPolygon,
-  pointInRect,
-  pointsDistance,
-  angleBySides,
-  isRectsOverlap,
-  isRectsInside,
-  isConvexPolygonsOverlap,
-  isConvexPolygonOverlapRect,
-  isConvexPolygonInAnother,
-};

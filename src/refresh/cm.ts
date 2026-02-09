@@ -1,11 +1,11 @@
 import { createTexture, drawColorMatrix } from '../gl/webgl';
 import { genFrameBufferWithTexture, releaseFrameBuffer } from './fb';
-import TextureCache from './TextureCache';
+import { TextureCache } from './texture-cache';
 import { assignMatrix, identity, multiply } from '../math/matrix';
-import Node from '../node/Node';
-import Root from '../node/Root';
+import { Node } from '../node/node';
+import { Root } from '../node/root';
 import { d2r } from '../math/geom';
-import CacheProgram from '../gl/CacheProgram';
+import { CacheProgram } from '../gl/cache-program';
 import { drawInSpreadBbox, needReGen } from './spread';
 
 // https://docs.rainmeter.net/tips/colormatrix-guide/

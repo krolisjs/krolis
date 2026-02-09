@@ -1,6 +1,6 @@
 import { RefreshLevel } from './level';
-import AbstractNode, { NodeType } from '../node/AbstractNode';
-import Component from '../node/Component';
+import { AbstractNode, NodeType } from '../node/abstract-node';
+import { Component } from '../node/component';
 import { Position } from '../style/define';
 
 export function checkReflow(node: AbstractNode, lv: RefreshLevel) {

@@ -1,7 +1,7 @@
-import Root from '../node/Root';
-import Node from '../node/Node';
-import { boxesForGauss, gaussKernel, gaussSize, gaussSizeByD, motionSize, radialSize } from '../math/blur';
-import TextureCache from './TextureCache';
+import { Root } from '../node/root';
+import { Node } from '../node/node';
+import { boxesForGauss, gaussSize, motionSize, radialSize } from '../math/blur';
+import { TextureCache } from './texture-cache';
 import {
   drawBox,
   drawDual,
@@ -13,7 +13,7 @@ import {
 import { genFrameBufferWithTexture, releaseFrameBuffer } from './fb';
 import { checkInRect } from './check';
 import { d2r } from '../math/geom';
-import CacheProgram from '../gl/CacheProgram';
+import { CacheProgram } from '../gl/cache-program';
 import { createInOverlay, drawInOverlay, drawInSpreadBbox, needReGen } from './spread';
 
 /**

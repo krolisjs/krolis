@@ -125,18 +125,3 @@ export function equal(a: any, b: any, keys?: string[]) {
 export function isPrimitive(v: any) {
   return isNil(v) || isBoolean(v) || isString(v) || isNumber(v);
 }
-
-export default {
-  isNil,
-  isString,
-  isNumber,
-  isObject,
-  isBoolean,
-  isDate,
-  isFunction,
-  isPlainObject,
-  isPrimitive,
-  equal,
-  extend,
-  clone,
-};

@@ -1,5 +1,5 @@
-import inject from '../util/inject';
-import bezier from './bezier';
+import inject from '../inject';
+import { bboxBezier } from './bezier';
 import { calPoint, isE } from './matrix';
 
 export function mergeBbox(
@@ -86,13 +86,13 @@ function mergeNotFirst(item: number[], x2: number, y2: number, res: Float32Array
   if (item.length === 4) {
     x = item[2];
     y = item[3];
-    const b = bezier.bboxBezier(x2, y2, item[0], item[1], x, y);
+    const b = bboxBezier(x2, y2, item[0], item[1], x, y);
     mergeBbox(res, b[0], b[1], b[2], b[3]);
   }
   else if (item.length === 6) {
     x = item[4];
     y = item[5];
-    const b = bezier.bboxBezier(
+    const b = bboxBezier(
       x2,
       y2,
       item[0],
@@ -204,13 +204,3 @@ export function assignBbox(t: Float32Array, v: Float32Array) {
   t[3] = v[3];
   return t;
 }
-
-export default {
-  mergeBbox,
-  getPointsRect,
-  getShapeGroupRect,
-  ceilBbox,
-  resetBbox,
-  EMPTY_RECT,
-  assignBbox,
-};
