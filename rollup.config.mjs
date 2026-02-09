@@ -67,8 +67,14 @@ export default [
         sourcemap: true,
       },
       {
-        file: 'dist/decoder.min.js',
-        format: 'es',
+        file: 'dist/decoder.iife.js',
+        format: 'iife',
+        name: 'decoder',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/decoder.iife.min.js',
+        format: 'iife',
         name: 'decoder',
         sourcemap: true,
         plugins: [
@@ -96,8 +102,14 @@ export default [
         sourcemap: true,
       },
       {
-        file: 'dist/encoder.min.js',
-        format: 'es',
+        file: 'dist/encoder.iife.js',
+        format: 'iife',
+        name: 'encoder',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/encoder.iife.min.js',
+        format: 'iife',
         name: 'encoder',
         sourcemap: true,
         plugins: [

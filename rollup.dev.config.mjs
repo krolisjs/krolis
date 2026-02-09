@@ -44,6 +44,12 @@ export default [
         name: 'decoder',
         sourcemap: true,
       },
+      {
+        file: 'dist/decoder.iife.js',
+        format: 'iife',
+        name: 'decoder',
+        sourcemap: true,
+      },
     ],
     plugins: [
       nodeResolve({ preferBuiltins: false }),
@@ -61,6 +67,12 @@ export default [
       {
         file: 'dist/encoder.js',
         format: 'es',
+        name: 'encoder',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/encoder.iife.js',
+        format: 'iife',
         name: 'encoder',
         sourcemap: true,
       },
