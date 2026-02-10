@@ -9,6 +9,7 @@ export * as mbDecoder from './mb-decoder';
 export * as mbEncoder from './mb-encoder';
 export * as decoderEvent from './decoder-event';
 export * as encoderEvent from './encoder-event';
+export * as define from './define';
 
 let defaultDecoder: DecoderConstructor = MbDecoder;
 

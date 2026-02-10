@@ -1,7 +1,7 @@
 export * as color from './color';
 export * as compute from './compute';
 export * as css from './css';
-export * from './define';
+export * as define from './define';
 export * as font from './font';
 export * as gradient from './gradient';
 export * as mbm from './mbm';

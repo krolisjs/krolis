@@ -5,7 +5,6 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
 import terser from '@rollup/plugin-terser';
-import dts from 'rollup-plugin-dts';
 
 export const wgsl = {
   name: 'wgsl-loader',
@@ -156,18 +155,6 @@ export default [
         extract: true,
         minimize: true,
       }),
-    ],
-  },
-  // 归并 .d.ts 文件
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.d.ts',
-      format: 'es',
-    },
-    plugins: [
-      // 将类型文件全部集中到一个文件中
-      dts(),
     ],
   },
 ];

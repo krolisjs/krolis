@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "declaration": false,
+    "declaration": true,
+    "declarationDir": "dist",
     "emitDeclarationOnly": false,
     "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
     "removeComments": false,
@@ -23,6 +24,7 @@
   },
   "exclude": [
     "node_modules",
+    "dist",
     "test"
   ],
 }

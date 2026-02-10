@@ -1,5 +1,4 @@
 import { Root } from '../node/root';
-import config from '../config';
 import { onMessage } from '../encoder';
 import { CAN_PLAY, REFRESH_COMPLETE } from '../refresh/refresh-event';
 import { TimeAnimation } from '../animation/time-animation';
@@ -10,6 +9,7 @@ import { NodeType } from '../node/abstract-node';
 import { Audio } from '../node/audio';
 import { Video } from '../node/video';
 import { START, PROGRESS, FINISH, ERROR } from './encoder-event';
+import config from '../config';
 
 let worker: Worker;
 let messageId = 0;
