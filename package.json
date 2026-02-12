@@ -11,8 +11,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc && rollup -c rollup.config.mjs && tsc --preserveWatchOutput",
-    "dev": "rm -rf dist && concurrently \"npm:dev:js\" \"npm:dev:types\"",
+    "build": "tsc && rollup -c rollup.config.mjs && tsc --preserveWatchOutput",
+    "dev": "concurrently \"npm:dev:js\" \"npm:dev:types\"",
     "dev:js": "rollup -c rollup.dev.config.mjs -w",
     "dev:types": "tsc -w --preserveWatchOutput",
     "test": "cross-env TS_NODE_PROJECT=tsconfig.test.json NODE_OPTIONS='--import ts-node/esm --no-warnings' mocha"
