@@ -12,7 +12,7 @@ enum State {
   LOADED = 2,
 }
 
-const HASH: Record<string, {
+export const CACHE: Record<string, {
   state: State,
   list: Array<(p: LoadFontRes) => void>,
   count: number, // 简易计数器回收
@@ -20,7 +20,7 @@ const HASH: Record<string, {
 }> = {};
 
 export async function loadFont(url: string, fontFamily?: string, options?: RequestInit) {
-  let cache = HASH[url];
+  let cache = CACHE[url];
   // 已加载或正在加载的复用
   if (cache) {
     cache.count++;
@@ -34,7 +34,7 @@ export async function loadFont(url: string, fontFamily?: string, options?: Reque
     }
   }
   // 新加载
-  cache = HASH[url] = {
+  cache = CACHE[url] = {
     state: State.LOADING,
     list: [],
     count: 0,
@@ -43,7 +43,7 @@ export async function loadFont(url: string, fontFamily?: string, options?: Reque
       release() {
         cache.count--;
         if (cache.count <= 0) {
-          delete HASH[url];
+          delete CACHE[url];
         }
       },
     },
@@ -68,4 +68,23 @@ export async function loadFont(url: string, fontFamily?: string, options?: Reque
       item(cache.res);
     });
   });
+}
+
+export async function loadLocalFonts() {
+  if (typeof navigator !== 'undefined') {
+    try {
+      const status = await navigator.permissions.query({
+        // @ts-ignore
+        name: 'local-fonts',
+      });
+      if (status.state === 'denied') {
+        return [];
+      }
+      // @ts-ignore
+      return await window.queryLocalFonts();
+    } catch (err) {
+      return [];
+    }
+  }
+  return [];
 }

@@ -2,17 +2,18 @@ import { NodeType } from './abstract-node';
 import { Node } from './node';
 import { BitmapProps } from '../format';
 import { CanvasCache } from '../refresh/canvas-cache';
-import { getCacheImg, loadImg, LoadImgRes } from '../util/load-img';
+import { getCacheImg, LoadImgRes } from '../util/load-img';
 import { TextureCache } from '../refresh/texture-cache';
 import { ObjectFit, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { Options } from '../animation/abstract-animation';
 import { GifAnimation } from '../animation/gif-animation';
-import config from '../config';
 import { canvasPolygon } from '../refresh/paint';
 import { LOAD } from '../refresh/refresh-event';
 import { ceilBbox } from '../math/bbox';
 import { GpuTextureCache } from '../refresh/gpu-texture-cache';
+import config from '../config';
+import inject from '../inject';
 
 export class Bitmap extends Node {
   _src: string;
@@ -59,7 +60,7 @@ export class Bitmap extends Node {
       }
       else {
         this.contentLoadingNum = 1;
-        loadImg(src).then(res => {
+        inject.loadImg(src).then(res => {
           this.loader = res;
           this.contentLoadingNum = 0;
           // 加载完且已经didMount了，触发刷新，默认第0帧

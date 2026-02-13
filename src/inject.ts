@@ -1,4 +1,6 @@
 import config from './config';
+import { loadImg } from './util/load-img';
+import { loadFont, loadLocalFonts } from './util/load-font';
 
 const SPF = 1000 / 60;
 
@@ -145,11 +147,6 @@ const inject = {
   ) {
     return offscreenCanvas(width, height, key, contextAttributes);
   },
-  isWebGLTexture(o: any) {
-    if (o && typeof WebGLTexture !== 'undefined') {
-      return o instanceof WebGLTexture;
-    }
-  },
   getFontCanvas() {
     return inject.getOffscreenCanvas(
       16,
@@ -207,80 +204,12 @@ const inject = {
       document.fonts.add(ff);
     }
   },
-  async loadArrayBufferImg(ab: ArrayBuffer): Promise<HTMLImageElement> {
-    const blob = new Blob([ab]);
-    const img = new Image();
-    return new Promise((resolve, reject) => {
-      img.onload = () => {
-        resolve(img);
-      };
-      img.onerror = (e) => {
-        reject(e);
-      };
-      img.src = URL.createObjectURL(blob);
-    });
+  loadImg,
+  loadFont,
+  loadLocalFonts,
+  async fetch(url: string, init?: RequestInit) {
+    return await fetch(url, init);
   },
-  pdfjsLibWorkerSrc: 'https://gw.alipayobjects.com/os/lib/pdfjs-dist/3.11.174/build/pdf.worker.min.js',
-  async loadArrayBufferPdf(ab: ArrayBuffer): Promise<HTMLImageElement> {
-    // @ts-ignore
-    const pdfjsLib = window.pdfjsLib;
-    pdfjsLib.GlobalWorkerOptions.workerSrc = inject.pdfjsLibWorkerSrc;
-    const blob = new Blob([ab]);
-    const url = URL.createObjectURL(blob);
-    const task = await pdfjsLib.getDocument(url).promise;
-    const page = await task.getPage(1);
-    const viewport = page.getViewport({ scale: 1 });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-    await page.render({
-      viewport,
-      canvasContext: ctx,
-      background: 'transparent',
-    }).promise;
-    const b = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(blob => {
-        if (blob) {
-          resolve(blob);
-        }
-        else {
-          reject('');
-        }
-      });
-    });
-    const img = new Image();
-    return new Promise((resolve, reject) => {
-      img.onload = () => {
-        resolve(img);
-      };
-      img.onerror = (e) => {
-        reject(e);
-      };
-      img.src = URL.createObjectURL(b);
-    });
-  },
-  async loadLocalFonts() {
-    if (typeof navigator !== 'undefined') {
-      try {
-        const status = await navigator.permissions.query({
-          // @ts-ignore
-          name: 'local-fonts',
-        });
-        if (status.state === 'denied') {
-          inject.error('No Permission.');
-          return [];
-        }
-        // @ts-ignore
-        return await window.queryLocalFonts();
-      } catch (err) {
-        inject.error(err);
-        return [];
-      }
-    }
-    return [];
-  },
-  async uploadBlobImgSrc(src: string): Promise<string | void> {},
   log(s: any) {
     console.log(s);
   },

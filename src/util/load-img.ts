@@ -13,7 +13,7 @@ enum State {
   LOADED = 2,
 }
 
-const HASH: Record<string, {
+export const CACHE: Record<string, {
   state: State,
   list: Array<(p: LoadImgRes) => void>,
   count: number, // 简易计数器回收
@@ -32,14 +32,14 @@ function isGif(uint8array: Uint8Array) {
 }
 
 export function getCacheImg(url: string) {
-  const o = HASH[url];
+  const o = CACHE[url];
   if (o?.state === State.LOADED) {
     return o.res;
   }
 }
 
 export async function loadImg(url: string, options?: RequestInit) {
-  let cache = HASH[url];
+  let cache = CACHE[url];
   // 已加载或正在加载的复用
   if (cache) {
     cache.count++;
@@ -53,7 +53,7 @@ export async function loadImg(url: string, options?: RequestInit) {
     }
   }
   // 新加载
-  cache = HASH[url] = {
+  cache = CACHE[url] = {
     state: State.LOADING,
     list: [],
     count: 0,
@@ -69,7 +69,7 @@ export async function loadImg(url: string, options?: RequestInit) {
             cache.res.source.close();
           }
           cache.res.frames.forEach(item => item.close());
-          delete HASH[url];
+          delete CACHE[url];
         }
       },
     },
