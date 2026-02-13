@@ -84,6 +84,9 @@ export function parseRoot(json: ItemRoot, options?: ParserOptions) {
   if (options?.void) {
     root.appendToVoid();
   }
+  else if (options?.gpu && options.adapter && options.device) {
+    root.appendToGpu(options.gpu, options.adapter, options.device, options.format || 'rgba8unorm');
+  }
   else if (options?.gl) {
     root.appendToGl(options.gl);
   }

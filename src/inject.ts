@@ -43,7 +43,7 @@ function offscreenCanvas(
   o.width = width;
   o.height = height;
   // 字体抗锯齿需要添加到DOM
-  if (o instanceof HTMLCanvasElement) {
+  if (typeof HTMLCanvasElement !== 'undefined' && o instanceof HTMLCanvasElement) {
     o.style.position = 'fixed';
     o.style.left = '9999px';
     o.style.top = '0px';

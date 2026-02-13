@@ -118,7 +118,7 @@ export class Root extends Container {
         const gpu = canvas.getContext('webgpu');
         if (gpu) {
           this.isWebgpu = true;
-          return this.appendToGpu(gpu, adapter!, device, format);
+          return this.appendToGpu(gpu, adapter!, device, format || 'rgba8unorm');
         }
       }
     }
