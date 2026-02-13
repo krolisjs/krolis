@@ -113,11 +113,9 @@ export class Root extends Container {
         },
       });
       if (device) {
-        this.device = device;
         const format = navigator.gpu.getPreferredCanvasFormat();
         const gpu = canvas.getContext('webgpu');
         if (gpu) {
-          this.isWebgpu = true;
           return this.appendToGpu(gpu, adapter!, device, format || 'rgba8unorm');
         }
       }
@@ -129,37 +127,42 @@ export class Root extends Container {
     if (config.webgl2 && this.props.webgl2 !== false || this.props.webgl2) {
       ctx = canvas.getContext('webgl2', attributes) as WebGL2RenderingContext;
     }
+    let isWebgl2 = false;
     if (ctx) {
-      this.isWebgl2 = true;
+      isWebgl2 = true;
     }
     else {
       ctx = canvas.getContext('webgl', attributes) as WebGLRenderingContext;
-      this.isWebgl2 = false;
     }
     if (!ctx) {
       throw new Error('Webgl unsupported!');
     }
-    return this.appendToGl(ctx);
+    return this.appendToGl(ctx, isWebgl2);
   }
 
   appendToGpu(gpu: GPUCanvasContext, adapter: GPUAdapter, device: GPUDevice, format: GPUTextureFormat) {
+    this.isWebgpu = true;
+    this.device = device;
     // 不能重复
     if (this.ctx) {
       inject.error('Duplicate appendToGpu');
       return;
     }
     this.ctx = gpu;
-    gpu.configure({
-      device,
-      format,
-      alphaMode: 'premultiplied',
-    });
+    if (gpu.configure) {
+      gpu.configure({
+        device,
+        format,
+        alphaMode: 'premultiplied',
+      });
+    }
     config.initGpu(adapter.limits.maxTextureDimension2D, adapter.limits.maxTextureArrayLayers);
     this.initRenderPipeline(device, format);
     this.afterAppend();
   }
 
-  appendToGl(gl: WebGLRenderingContext | WebGL2RenderingContext) {
+  appendToGl(gl: WebGLRenderingContext | WebGL2RenderingContext, isWebgl2?: boolean) {
+    this.isWebgl2 = !!isWebgl2;
     // 不能重复
     if (this.ctx) {
       inject.error('Duplicate appendToGl');

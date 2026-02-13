@@ -95,7 +95,7 @@ const SUPPORT_FONT: Record<string, boolean> = {};
 let defaultFontFamilyData: Uint8ClampedArray;
 
 const inject = {
-  requestAnimationFrame(cb: FrameRequestCallback): number {
+  requestAnimationFrame(cb: () => void): number {
     if (!cb) {
       return -1;
     }
@@ -113,18 +113,16 @@ const inject = {
     return res;
   },
   cancelAnimationFrame(id: number) {
-    let res;
     if (typeof cancelAnimationFrame !== 'undefined') {
       inject.cancelAnimationFrame = cancelAnimationFrame.bind(null);
-      res = cancelAnimationFrame(id);
+      cancelAnimationFrame(id);
     }
     else {
-      res = clearTimeout(id);
+      clearTimeout(id);
       inject.cancelAnimationFrame = function (id) {
         return clearTimeout(id);
       };
     }
-    return res;
   },
   now() {
     if (typeof performance !== 'undefined') {

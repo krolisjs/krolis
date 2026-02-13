@@ -73,6 +73,7 @@ export type ItemRoot = {
 export type ParserOptions = {
   dom?: HTMLElement;
   gl?: WebGLRenderingContext | WebGL2RenderingContext;
+  webgl2?: boolean;
   gpu?: GPUCanvasContext;
   adapter?: GPUAdapter;
   device?: GPUDevice;

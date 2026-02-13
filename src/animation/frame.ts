@@ -10,7 +10,7 @@ export class Frame {
   constructor() {
     this.task = [];
     this.now = inject.now();
-    this.id = 0;
+    this.id = -1;
   }
 
   private init() {
@@ -45,10 +45,10 @@ export class Frame {
 
   onFrame(handle: (delta: number) => void) {
     const task = this.task;
-    if (!task.length) {
+    task.push(handle);
+    if (task.length === 1) {
       this.init();
     }
-    task.push(handle);
   }
 
   offFrame(handle: (delta: number) => void) {
