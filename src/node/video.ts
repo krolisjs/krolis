@@ -20,17 +20,17 @@ import { GpuTextureCache } from '../refresh/gpu-texture-cache';
 export class Video extends Node {
   private _src: string;
   isPure: boolean;
-  onMeta?: (o: VideoAudioMeta) => void;
-  onCanplay?: () => void;
-  onError?: (e: string) => void;
-  onWaiting?: () => void;
+  onMeta: ((o: VideoAudioMeta) => void) | null = null;
+  onCanplay: (() => void) | null = null;
+  onError: ((e: string) => void) | null = null;
+  onWaiting: (() => void) | null = null;
   gainNode?: GainNode;
-  private _decoder?: AbstractDecoder;
-  private _videoFrame?: VideoFrame;
+  private _decoder: AbstractDecoder | null = null;
+  private _videoFrame: VideoFrame | null = null;
   private _currentTime: number;
-  private _metaData?: VideoAudioMeta;
+  private _metaData: VideoAudioMeta | null = null;
   private _volumn: number;
-  timeAnimation?: TimeAnimation;
+  timeAnimation: TimeAnimation | null = null;
 
   declare props: VideoProps;
 
@@ -572,13 +572,13 @@ export class Video extends Node {
     return this._decoder;
   }
 
-  get videoFrame(): VideoFrame | undefined {
+  get videoFrame() {
     return this._videoFrame;
   }
 
-  set videoFrame(v: VideoFrame | undefined) {
+  set videoFrame(v: VideoFrame | undefined | null) {
     if (this._videoFrame !== v) {
-      this._videoFrame = v;
+      this._videoFrame = v ? v : null;
       this.refresh();
     }
   }

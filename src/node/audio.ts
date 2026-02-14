@@ -13,18 +13,18 @@ import { CAN_PLAY, ERROR, META, WAITING } from '../refresh/refresh-event';
 
 export class Audio extends Node {
   private _src: string;
-  loader?: LoadAudioRes;
-  onMeta?: (o: VideoAudioMeta) => void;
-  onCanplay?: () => void;
-  onError?: (e: string) => void;
-  onWaiting?: () => void;
-  audioBufferSourceNode?: AudioBufferSourceNode;
-  gainNode?: GainNode;
-  private _decoder?: AbstractDecoder;
+  loader: LoadAudioRes | null = null;
+  onMeta: ((o: VideoAudioMeta) => void) | null = null;
+  onCanplay: (() => void) | null  = null;
+  onError: ((e: string) => void) | null = null;
+  onWaiting: (() => void) | null = null;
+  audioBufferSourceNode: AudioBufferSourceNode | null = null;
+  gainNode: GainNode | null = null;
+  private _decoder: AbstractDecoder | null = null;
   private _currentTime: number;
-  private _metaData?: VideoAudioMeta;
+  private _metaData: VideoAudioMeta | null = null;
   private _volumn: number;
-  timeAnimation?: TimeAnimation;
+  timeAnimation: TimeAnimation | null = null;
 
   declare props: AudioProps;
 
@@ -168,11 +168,11 @@ export class Audio extends Node {
     if (audioBufferSourceNode) {
       audioBufferSourceNode.stop();
       audioBufferSourceNode.disconnect();
-      this.audioBufferSourceNode = undefined;
+      this.audioBufferSourceNode = null;
     }
     if (gainNode) {
       gainNode.disconnect();
-      this.gainNode = undefined;
+      this.gainNode = null;
     }
   }
 

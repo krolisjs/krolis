@@ -67,7 +67,7 @@ export class MbDecoder extends AbstractDecoder {
         cache.metaList.splice(0).forEach(item => {
           item.emit(META, data.meta);
           // 设置gopIndex
-          item.start(item.currentTime);
+          (item as MbDecoder).start(item.currentTime);
         });
       }
       // 一个gop解码完成
