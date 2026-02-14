@@ -90,15 +90,17 @@ export class Video extends Node {
         this.emit(ERROR, e);
         this.refresh();
       });
-      decoder.on(decoderEvent.CANPLAY, gop => {
+      decoder.on(decoderEvent.CANPLAY, async () => {
         const frame = decoder.getFrameByTime(this._currentTime);
-        this.videoFrame = frame;
-        this.contentLoadingNum = 0;
-        if (this.onCanplay) {
-          this.onCanplay();
+        if (frame) {
+          this.videoFrame = frame;
+          this.contentLoadingNum = 0;
+          if (this.onCanplay) {
+            this.onCanplay();
+          }
+          this.emit(CAN_PLAY);
+          this.refresh();
         }
-        this.emit(CAN_PLAY);
-        this.refresh();
       });
       decoder.on([decoderEvent.CANPLAY, decoderEvent.AUDIO_BUFFER], gop => {
         const root = this.root;
