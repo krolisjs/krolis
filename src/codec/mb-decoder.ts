@@ -65,9 +65,9 @@ export class MbDecoder extends AbstractDecoder {
           };
         });
         cache.metaList.splice(0).forEach(item => {
+          item.emit(META, data.meta);
           // 设置gopIndex
           item.start(item.currentTime);
-          item.emit(META, data.meta);
         });
       }
       // 一个gop解码完成
@@ -168,7 +168,7 @@ export class MbDecoder extends AbstractDecoder {
         fileSize: 0,
       },
       gopList: [],
-      singleHash: {},
+      // singleHash: {},
       count: 1,
     };
     const mes = {

@@ -110,10 +110,10 @@ export type Cache = {
   loadList: [AbstractDecoder], // 整个处理队列记录
   meta: VideoAudioMeta,
   gopList: CacheGOP[],
-  singleHash: Record<number, {
-    videoFrame: VideoFrame,
-    users: AbstractDecoder[],
-  }>, // 单帧合成模式下，按时间戳保存，同一个gop下可能多个不同时间的
+  // singleHash: Record<number, {
+  //   videoFrame: VideoFrame,
+  //   users: AbstractDecoder[],
+  // }>, // 单帧合成模式下，按时间戳保存，同一个gop下可能多个不同时间的
   error?: string,
   count: number;
 };
