@@ -12,7 +12,7 @@ export abstract class AbstractDecoder extends Event {
   gopIndex: number; // 当前区域索引
   error: boolean;
 
-  constructor(url: string) {
+  protected constructor(url: string) {
     super();
     this.url = url;
     this.currentTime = -Infinity;
@@ -25,11 +25,7 @@ export abstract class AbstractDecoder extends Event {
 
   abstract getFrameByTime(time: number): VideoFrame | undefined;
 
-  abstract releaseGOPList(): void;
-
   abstract release(): void;
-
-  abstract get gopList(): CacheGOP[];
 
   abstract get currentGOP(): CacheGOP;
 }
