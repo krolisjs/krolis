@@ -582,7 +582,7 @@ export class Text extends Node {
     // 最后一行对齐，以及最后一行循环里没算要再算一次
     lineBox.verticalAlign();
     maxW = Math.max(maxW, lineBox.width);
-    if (letterSpacing && letterSpacing < 0) {
+    if (letterSpacing && letterSpacing) {
       maxW -= letterSpacing;
     }
     /**
