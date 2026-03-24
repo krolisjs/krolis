@@ -1,6 +1,6 @@
 {
   "name": "krolis",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "maintainers": [
     {
       "name": "army8735",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "mediabunny": "^1.35.1",
+    "mediabunny": "^1.40.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

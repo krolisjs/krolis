@@ -67,5 +67,6 @@ void main() {
   else if (v_textureIndex == 15.0) {
     color = texture(u_texture[15], v_texCoords);
   }
-  fragColor = color * v_opacity;
+  float alpha = color.a * v_opacity;
+  fragColor = vec4(color.rgb * alpha, alpha);
 }

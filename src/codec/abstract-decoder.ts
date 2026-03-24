@@ -27,5 +27,9 @@ export abstract class AbstractDecoder extends Event {
 
   abstract release(): void;
 
+  abstract releaseGOPList(): void;
+
   abstract get currentGOP(): CacheGOP;
+
+  abstract get gopList(): CacheGOP[];
 }

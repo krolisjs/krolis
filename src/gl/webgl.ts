@@ -287,6 +287,9 @@ function drawPrItem(
   }
   if (!uArray) {
     uArray = new Uint16Array(MAX_TEXTURE_IMAGE_UNITS);
+    for (let i = 0; i < MAX_TEXTURE_IMAGE_UNITS; i++) {
+      uArray[i] = i;
+    }
   }
   for (let i = 0; i < length; i++) {
     const {

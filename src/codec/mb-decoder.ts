@@ -444,10 +444,10 @@ export class MbDecoder extends AbstractDecoder {
   }
 
   get gopList() {
-    return HASH[this.url]?.gopList;
+    return HASH[this.url]!.gopList;
   }
 
   get currentGOP() {
-    return HASH[this.url]?.gopList[this.gopIndex];
+    return HASH[this.url]!.gopList[this.gopIndex];
   }
 }
