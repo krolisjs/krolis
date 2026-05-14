@@ -33,14 +33,12 @@ export default [
         format: 'iife',
         sourcemap: true,
         name: 'krolis',
-        exports: 'named',
       },
       {
         file: 'dist/index.iife.min.js',
         format: 'iife',
         sourcemap: true,
         name: 'krolis',
-        exports: 'named',
         plugins: [
           terser(),
         ],
@@ -71,14 +69,12 @@ export default [
         file: 'dist/decoder.iife.js',
         format: 'iife',
         name: 'decoder',
-        exports: 'named',
         sourcemap: true,
       },
       {
         file: 'dist/decoder.iife.min.js',
         format: 'iife',
         name: 'decoder',
-        exports: 'named',
         sourcemap: true,
         plugins: [
           terser(),
@@ -90,7 +86,7 @@ export default [
       commonjs(),
       typescript({
         declaration: false,
-        target: "ES2018",
+        target: 'ES2018',
       }),
       json(),
     ],
@@ -108,14 +104,12 @@ export default [
         file: 'dist/encoder.iife.js',
         format: 'iife',
         name: 'encoder',
-        exports: 'named',
         sourcemap: true,
       },
       {
         file: 'dist/encoder.iife.min.js',
         format: 'iife',
         name: 'encoder',
-        exports: 'named',
         sourcemap: true,
         plugins: [
           terser(),
@@ -127,7 +121,7 @@ export default [
       commonjs(),
       typescript({
         declaration: false,
-        target: "ES2018",
+        target: 'ES2018',
       }),
       json(),
     ],

@@ -11,18 +11,16 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc && rollup -c rollup.config.mjs && tsc --preserveWatchOutput",
-    "dev": "concurrently \"npm:dev:js\" \"npm:dev:types\"",
-    "dev:js": "rollup -c rollup.dev.config.mjs -w",
-    "dev:types": "tsc -w --preserveWatchOutput",
-    "test": "cross-env TS_NODE_PROJECT=tsconfig.test.json NODE_OPTIONS='--import ts-node/esm --no-warnings' mocha"
+    "build": "tsc && rollup -c rollup.config.mjs",
+    "dev": "rollup -c rollup.config.mjs -w",
+    "test": "TS_NODE_PROJECT=tsconfig.test.json NODE_OPTIONS='--import ts-node/esm --no-warnings' mocha"
   },
   "peerDependencies": {
     "lottie-web": "^5.0.0"
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "mediabunny": "^1.40.0",
+    "mediabunny": "^1.45.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
@@ -35,8 +33,6 @@
     "@types/node": "^25.0.10",
     "@types/uuid": "^9.0.8",
     "@webgpu/types": "^0.1.69",
-    "concurrently": "^9.2.1",
-    "cross-env": "^10.1.0",
     "expect": "^30.2.0",
     "less": "^4.4.0",
     "mocha": "^10.4.0",
