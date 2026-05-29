@@ -2,7 +2,7 @@ import {
   ALL_FORMATS,
   Input,
   UrlSource,
-  StreamSource,
+  CustomSource,
   EncodedPacketSink,
   InputVideoTrack,
   InputAudioTrack,
@@ -78,13 +78,13 @@ export const onMessage = async (e: MessageEvent<{
       duration: 0,
       fileSize: fileSize,
     };
-    let source: UrlSource | StreamSource;
+    let source: UrlSource | CustomSource;
     // config配置全部加载，或者自定义range请求
     if (preloadAll) {
       source = new UrlSource(url);
     }
     else {
-      source = new StreamSource({
+      source = new CustomSource({
         read: async (start, end) => {
           // console.log(start, end);
           const { arrayBuffer } = await loadRange(url, start, end - 1, fileSize, { indexedDB: e.data.indexedDB });
