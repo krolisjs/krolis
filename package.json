@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "mediabunny": "^1.45.4",
+    "mediabunny": "^1.46.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
