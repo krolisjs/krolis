@@ -2,7 +2,7 @@ import { NodeType } from './abstract-node';
 import { Node } from './node'
 import { VideoProps } from '../format';
 import { TextureCache } from '../refresh/texture-cache';
-import { ObjectFit, StyleUnit } from '../style/define';
+import { ObjectFit, StyleUnit, Visibility } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { CanvasCache } from '../refresh/canvas-cache';
 import { Options } from '../animation/abstract-animation';
@@ -494,6 +494,13 @@ export class Video extends Node {
     this.timeAnimation?.remove();
     const animation = this.timeAnimation = new TimeAnimation(this, start, options);
     return this.initAnimate(animation, options);
+  }
+
+  onTimeAnimationEndOverflow(time: number, duration: number) {
+    if (time - duration >= config.releasePrevDuration && this.computedStyle.visibility === Visibility.HIDDEN) {
+      this._decoder?.releaseGOPList();
+      this.videoFrame = undefined;
+    }
   }
 
   override cloneProps() {

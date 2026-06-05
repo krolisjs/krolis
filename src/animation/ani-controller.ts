@@ -179,23 +179,23 @@ function checkPlayAudio(animation: AbstractAnimation) {
     return;
   }
   if (animation instanceof TimeAnimation) {
-    let node = animation.node;
+    const node = animation.node;
     if (node.type !== NodeType.AUDIO && node.type !== NodeType.VIDEO) {
       return;
     }
-    node = node as Video | Audio;
-    if (node.gainNode) {
-      node.gainNode.disconnect();
-      node.gainNode = undefined;
+    const mediaNode = node as Video | Audio;
+    if (mediaNode.gainNode) {
+      mediaNode.gainNode.disconnect();
+      mediaNode.gainNode = undefined;
     }
     // video可能没有声音就没有AudioBuffer
-    if (node.decoder) {
-      const gop = node.decoder.currentGOP;
-      if (gop?.audioBuffer && node.root && node.root.audioContext) {
-        const audioContext = node.root!.audioContext;
-        if (!node.gainNode) {
-          node.gainNode = audioContext.createGain();
-          node.gainNode.gain.value = node.volumn;
+    if (mediaNode.decoder) {
+      const gop = mediaNode.decoder.currentGOP;
+      if (gop?.audioBuffer && mediaNode.root && mediaNode.root.audioContext) {
+        const audioContext = mediaNode.root.audioContext;
+        if (!mediaNode.gainNode) {
+          mediaNode.gainNode = audioContext.createGain();
+          mediaNode.gainNode.gain.value = mediaNode.volumn;
         }
         if (gop.audioBufferSourceNode) {
           try {
@@ -206,8 +206,8 @@ function checkPlayAudio(animation: AbstractAnimation) {
         }
         const audioBufferSourceNode = audioContext.createBufferSource();
         audioBufferSourceNode.buffer = gop.audioBuffer;
-        audioBufferSourceNode.connect(node.gainNode);
-        node.gainNode.connect(audioContext.destination);
+        audioBufferSourceNode.connect(mediaNode.gainNode);
+        mediaNode.gainNode.connect(audioContext.destination);
         gop.audioBufferSourceNode = audioBufferSourceNode;
         const current = animation.currentTime - animation.delay;
         // 正常开头或者从gop中间播放
@@ -227,8 +227,8 @@ function checkPlayAudio(animation: AbstractAnimation) {
           );
         }
         // 后面的可能解码好了，在区域非常近的情况，都是等待播放不会立刻播放
-        const gopList = node.decoder.gopList;
-        for (let i = node.decoder.gopIndex + 1, len = gopList.length; i < len; i++) {
+        const gopList = mediaNode.decoder.gopList;
+        for (let i = mediaNode.decoder.gopIndex + 1, len = gopList.length; i < len; i++) {
           const item = gopList[i];
           if (animation.duration <= item.timestamp) {
             return;
@@ -243,12 +243,12 @@ function checkPlayAudio(animation: AbstractAnimation) {
           if (item.audioBuffer) {
             const audioBufferSourceNode = audioContext.createBufferSource();
             audioBufferSourceNode.buffer = item.audioBuffer;
-            if (!node.gainNode) {
-              node.gainNode = audioContext.createGain();
-              node.gainNode.gain.value = node.volumn;
+            if (!mediaNode.gainNode) {
+              mediaNode.gainNode = audioContext.createGain();
+              mediaNode.gainNode.gain.value = mediaNode.volumn;
             }
-            audioBufferSourceNode.connect(node.gainNode);
-            node.gainNode.connect(audioContext.destination);
+            audioBufferSourceNode.connect(mediaNode.gainNode);
+            mediaNode.gainNode.connect(audioContext.destination);
             item.audioBufferSourceNode = audioBufferSourceNode;
             // 最后一个可能因显示区域不播放完，如果反向显示区域更大，设置更长的duration也没事
             audioBufferSourceNode.start(
@@ -265,16 +265,16 @@ function checkPlayAudio(animation: AbstractAnimation) {
 
 function checkStopAudio(animation: AbstractAnimation) {
   if (animation instanceof TimeAnimation) {
-    let node = animation.node;
+    const node = animation.node;
     if (node.type !== NodeType.AUDIO && node.type !== NodeType.VIDEO) {
       return;
     }
-    node = node as Video | Audio;
-    if (node.gainNode) {
-      node.gainNode.disconnect();
-      node.gainNode = undefined;
+    const mediaNode = node as Video | Audio;
+    if (mediaNode.gainNode) {
+      mediaNode.gainNode.disconnect();
+      mediaNode.gainNode = undefined;
     }
-    node.decoder?.gopList?.forEach(item => {
+    mediaNode.decoder?.gopList?.forEach(item => {
       try {
         item.audioBufferSourceNode?.stop();
       } catch(e) {}

@@ -1,18 +1,20 @@
 import { AbstractAnimation, Options } from './abstract-animation';
-import { Video } from '../node/video';
-import { Audio } from '../node/audio';
-import { Lottie } from '../node/lottie';
-import { Visibility } from '../style/define';
-import config from '../config';
+import type { Node } from '../node/node';
+
+type TimeAnimatable = Node & {
+  currentTime: number;
+  readonly duration: number;
+  onTimeAnimationEndOverflow?(time: number, duration: number): void;
+};
 
 export class TimeAnimation extends AbstractAnimation {
-  node: Video | Audio | Lottie;
+  node: TimeAnimatable;
   private _timeArea: [number, number];
   private _timeAreaR: [number, number];
   currentTimeArea: [number, number];
   originTime: number;
 
-  constructor(node: Video | Audio | Lottie, start: number, options: Options) {
+  constructor(node: TimeAnimatable, start: number, options: Options) {
     super(node, options);
     this.node = node;
     this._timeArea = [start, start + this.duration];
@@ -92,10 +94,7 @@ export class TimeAnimation extends AbstractAnimation {
     }
     // 最后结束特殊处理，onFirstInEndDelay()根据endDelay/fill决定是否还原还是停留最后一帧，超过DUR需清空
     if (isLastCount && percent >= 1) {
-      if (node instanceof Video && time - duration >= config.releasePrevDuration && node.computedStyle.visibility === Visibility.HIDDEN) {
-        node.decoder?.releaseGOPList();
-        node.videoFrame = undefined;
-      }
+      node.onTimeAnimationEndOverflow?.(time, duration);
     }
     else {
       node.currentTime = Math.floor(currentTimeArea[0] + (currentTimeArea[1] - currentTimeArea[0]) * percent);
