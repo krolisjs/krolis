@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "declaration": true,
     "rootDir": "src",
+    "declaration": true,
     "declarationDir": "dist",
     "emitDeclarationOnly": true,
     "noEmit": true,

@@ -5,6 +5,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
 import terser from '@rollup/plugin-terser';
+import dts from 'rollup-plugin-dts';
 
 export const wgsl = {
   name: 'wgsl-loader',
@@ -50,8 +51,10 @@ export default [
       glslify(),
       wgsl,
       typescript({
+        outputToFilesystem: false,
         declaration: false,
-        target: "ES2018",
+        declarationDir: undefined,
+        target: 'ES2018',
       }),
       json(),
     ],
@@ -85,7 +88,9 @@ export default [
       nodeResolve({ preferBuiltins: false }),
       commonjs(),
       typescript({
+        outputToFilesystem: false,
         declaration: false,
+        declarationDir: undefined,
         target: 'ES2018',
       }),
       json(),
@@ -120,7 +125,9 @@ export default [
       nodeResolve({ preferBuiltins: false }),
       commonjs(),
       typescript({
+        outputToFilesystem: false,
         declaration: false,
+        declarationDir: undefined,
         target: 'ES2018',
       }),
       json(),
@@ -149,6 +156,38 @@ export default [
         extract: true,
         minimize: true,
       }),
+    ],
+  },
+  // 归并 .d.ts 文件
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/index.d.ts',
+      format: 'es',
+    },
+    plugins: [
+      // 将类型文件全部集中到一个文件中
+      dts(),
+    ],
+  },
+  {
+    input: 'src/decoder.ts',
+    output: {
+      file: 'dist/decoder.d.ts',
+      format: 'es',
+    },
+    plugins: [
+      dts(),
+    ],
+  },
+  {
+    input: 'src/encoder.ts',
+    output: {
+      file: 'dist/encoder.d.ts',
+      format: 'es',
+    },
+    plugins: [
+      dts(),
     ],
   },
 ];
