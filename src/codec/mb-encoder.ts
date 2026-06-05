@@ -83,7 +83,7 @@ export class MbEncoder extends AbstractEncoder {
       await onMessage({ data: mes } as any);
     }
     this.emit(START, num);
-    // 记录每个node的当前时间的音频有没有提取过，避免encode重复，已node的id+时间做key
+    // 记录每个node的当前时间的音频有没有提取过，避免encode重复，以node的id+时间做key
     const audioRecord: Record<string, true> = {};
     for (let i = 0; i < num; i++) {
       const timestamp = (i + begin) * spf;

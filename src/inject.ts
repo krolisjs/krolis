@@ -1,6 +1,6 @@
 import config from './config';
-import { loadImg } from './util/load-img';
-import { loadFont, loadLocalFonts } from './util/load-font';
+import { loadImg } from './util/img';
+import { loadFont, loadLocalFonts } from './util/font';
 
 const SPF = 1000 / 60;
 

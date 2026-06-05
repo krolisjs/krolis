@@ -2,7 +2,7 @@ import { NodeType } from './abstract-node';
 import { Node } from './node';
 import { BitmapProps } from '../format';
 import { CanvasCache } from '../refresh/canvas-cache';
-import { getCacheImg, LoadImgRes } from '../util/load-img';
+import { getCacheImg, LoadImgRes } from '../util/img';
 import { TextureCache } from '../refresh/texture-cache';
 import { ObjectFit, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';

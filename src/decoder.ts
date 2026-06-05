@@ -9,7 +9,7 @@ import {
   VideoSampleSink,
   AudioSampleSink,
 } from 'mediabunny';
-import { loadRange } from './util/load-range';
+import { loadRange } from './util/range';
 import { AudioChunk, DecoderMessageEvent, DecoderMessageType, GOP, GOPState, SimpleGOP, VideoAudioMeta } from './codec/define';
 
 export async function sleep(ms: number) {

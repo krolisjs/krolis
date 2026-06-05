@@ -1,7 +1,7 @@
 import { NodeType } from './abstract-node';
 import { Node } from './node'
 import { AudioProps } from '../format';
-import { LoadAudioRes } from '../util/load-audio';
+import { LoadAudioRes } from '../util/audio';
 import { Options } from '../animation/abstract-animation';
 import { TimeAnimation } from '../animation/time-animation';
 import { GOPState, VideoAudioMeta } from '../codec/define';
@@ -142,7 +142,8 @@ export class Audio extends Node {
   }
 
   override calContentLoading() {
-    const res = super.calContentLoading();
+    // audio本身不显示，不能用super的是否展示判断
+    const res = this.contentLoadingNum;
     if (res) {
       if (this._currentTime >= 0) {
         if (this._metaData) {
